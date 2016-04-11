@@ -1,0 +1,14 @@
+D:\Projs\Projs\Basf\Basf.Domain\bin\Debug\Basf.Domain.dll
+D:\Projs\Projs\Basf\Basf.Domain\bin\Debug\Basf.Domain.pdb
+D:\Projs\Projs\Basf\Basf.Domain\bin\Debug\Basf.dll
+D:\Projs\Projs\Basf\Basf.Domain\bin\Debug\Basf.pdb
+D:\Projs\Projs\Basf\Basf.Domain\obj\Debug\Basf.Domain.csprojResolveAssemblyReference.cache
+D:\Projs\Projs\Basf\Basf.Domain\obj\Debug\Basf.Domain.dll
+D:\Projs\Projs\Basf\Basf.Domain\obj\Debug\Basf.Domain.pdb
+D:\WorkFolder\Projs\Basf\Basf.Domain\obj\Debug\Basf.Domain.csprojResolveAssemblyReference.cache
+D:\WorkFolder\Projs\Basf\Basf.Domain\bin\Debug\Basf.Domain.dll
+D:\WorkFolder\Projs\Basf\Basf.Domain\bin\Debug\Basf.Domain.pdb
+D:\WorkFolder\Projs\Basf\Basf.Domain\bin\Debug\Basf.dll
+D:\WorkFolder\Projs\Basf\Basf.Domain\bin\Debug\Basf.pdb
+D:\WorkFolder\Projs\Basf\Basf.Domain\obj\Debug\Basf.Domain.dll
+D:\WorkFolder\Projs\Basf\Basf.Domain\obj\Debug\Basf.Domain.pdb
