@@ -1,0 +1,4 @@
+# 以下文件夹将被忽略
+obj
+bin
+packages

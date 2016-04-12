@@ -9,6 +9,8 @@ using System.Data.SqlClient;
 using Basf.LogMongo;
 using ConsoleTest.Domain.Model;
 using Basf.MongoStore;
+using System.Collections.Generic;
+using System.Data;
 
 namespace ConsoleTest
 {
@@ -33,10 +35,9 @@ namespace ConsoleTest
             //  .UsingLogger<MongoLogger>()
             //  .UsingOrmDapper<SqlConnection, DefaultOrmProvider>("STS")
             //);
-            //AppRuntime.Resolve<IDbConnection>().Query<Order>("SELECT COUNT(*) FORM ORDER");
             //List<User> userList = AppRuntime.Resolve<IDbConnection>().Query<User>("SELECT * FROM [User] WHERE UserId=@UserId", new { UserId = 1 }).AsList();
             //User user = AppRuntime.Resolve<IDbConnection>().Get<User>(new { UserId = 1 });
-            
+
             AppRuntime.Debug("Test");
             Console.ReadLine();
         }

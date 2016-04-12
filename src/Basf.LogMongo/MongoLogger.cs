@@ -6,12 +6,12 @@ namespace Basf.LogMongo
 {
     public class MongoLogger : ILogger
     {
-        private IMongoDatabase db = null;
         private IMongoCollection<Logger> collection = null;
         public MongoLogger()
         {
             MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore"));
-            this.db = client.GetDatabase("LoggerStore");
+            IMongoDatabase db = client.GetDatabase("LoggerStore");
+            this.collection = db.GetCollection<Logger>("Logger");
         }
         public bool IsDebugEnabled { get { return true; } }
         public bool IsErrorEnabled { get { return true; } }
