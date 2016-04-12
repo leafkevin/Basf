@@ -1,9 +1,0 @@
-D:\WorkFolder\Projs\Basf\Basf.Repository\obj\Debug\Basf.Repository.csprojResolveAssemblyReference.cache
-D:\WorkFolder\Projs\Basf\Basf.Repository\bin\Debug\Basf.Repository.dll
-D:\WorkFolder\Projs\Basf\Basf.Repository\bin\Debug\Basf.Repository.pdb
-D:\WorkFolder\Projs\Basf\Basf.Repository\bin\Debug\Basf.dll
-D:\WorkFolder\Projs\Basf\Basf.Repository\bin\Debug\Basf.Domain.dll
-D:\WorkFolder\Projs\Basf\Basf.Repository\bin\Debug\Basf.Domain.pdb
-D:\WorkFolder\Projs\Basf\Basf.Repository\bin\Debug\Basf.pdb
-D:\WorkFolder\Projs\Basf\Basf.Repository\obj\Debug\Basf.Repository.dll
-D:\WorkFolder\Projs\Basf\Basf.Repository\obj\Debug\Basf.Repository.pdb

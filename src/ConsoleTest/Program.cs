@@ -7,10 +7,8 @@ using Basf.Orm;
 using System;
 using System.Data.SqlClient;
 using Basf.LogMongo;
-using System.Data;
 using ConsoleTest.Domain.Model;
-using System.Collections.Generic;
-using System.Threading;
+using Basf.MongoStore;
 
 namespace ConsoleTest
 {
@@ -18,12 +16,17 @@ namespace ConsoleTest
     {
         static void Main(string[] args)
         {
+            //DDD领域 C端使用
             AppRuntime.Configure(f =>
               f.UsingContainer(new AutofacContainer())
                .UsingLogger<Log4NetLogger>()
                .UsingLogger<MongoLogger>()
                .UsingRepository<SqlConnection, DefaultOrmProvider>("STS")
+               .UsingMongoStore()
             );
+            User user = AppRuntime.Resolve<IRepository<User>>().Get(new { UserId = 1 });
+
+            //Q端使用
             //AppRuntime.Configure(f =>
             // f.UsingContainer(new AutofacContainer())
             //  .UsingLogger<Log4NetLogger>()
@@ -31,10 +34,10 @@ namespace ConsoleTest
             //  .UsingOrmDapper<SqlConnection, DefaultOrmProvider>("STS")
             //);
             //AppRuntime.Resolve<IDbConnection>().Query<Order>("SELECT COUNT(*) FORM ORDER");
-            AppRuntime.Debug("Test");
             //List<User> userList = AppRuntime.Resolve<IDbConnection>().Query<User>("SELECT * FROM [User] WHERE UserId=@UserId", new { UserId = 1 }).AsList();
             //User user = AppRuntime.Resolve<IDbConnection>().Get<User>(new { UserId = 1 });
-            User user = AppRuntime.Resolve<IRepository<User>>().Get(new { UserId = 1 });
+            
+            AppRuntime.Debug("Test");
             Console.ReadLine();
         }
     }

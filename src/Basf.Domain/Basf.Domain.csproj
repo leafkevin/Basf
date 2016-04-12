@@ -48,11 +48,8 @@
     <Compile Include="Command\ICommandBus.cs" />
     <Compile Include="Command\ICommandHandler.cs" />
     <Compile Include="Command\Command.cs" />
-    <Compile Include="EventResponse.cs" />
     <Compile Include="Event\DefaultEventBus.cs" />
-    <Compile Include="Event\EventHandler.cs" />
     <Compile Include="Event\IEventBus.cs" />
-    <Compile Include="IDomainActor.cs" />
     <Compile Include="IDomainContext.cs" />
     <Compile Include="Event\DomainEvent.cs" />
     <Compile Include="Command\ICommand.cs" />

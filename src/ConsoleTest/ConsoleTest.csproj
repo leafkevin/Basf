@@ -71,6 +71,10 @@
       <Project>{fb08144d-41c0-45ae-9430-83380173dcf1}</Project>
       <Name>Basf.LogMongo</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Basf.MongoStore\Basf.MongoStore.csproj">
+      <Project>{a03e698d-1491-4025-bd55-67a886482f65}</Project>
+      <Name>Basf.MongoStore</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Basf.Orm\Basf.Orm.csproj">
       <Project>{54656de3-e6e3-4552-9484-38745d5d87bd}</Project>
       <Name>Basf.Orm</Name>

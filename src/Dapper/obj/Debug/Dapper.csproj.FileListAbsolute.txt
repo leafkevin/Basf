@@ -1,5 +1,0 @@
-D:\Projs\Projs\Basf\Dapper\bin\Debug\Dapper.dll
-D:\Projs\Projs\Basf\Dapper\bin\Debug\Dapper.pdb
-D:\Projs\Projs\Basf\Dapper\obj\Debug\Dapper.dll
-D:\Projs\Projs\Basf\Dapper\obj\Debug\Dapper.pdb
-D:\Projs\Projs\Basf\Dapper\obj\Debug\Dapper.csprojResolveAssemblyReference.cache

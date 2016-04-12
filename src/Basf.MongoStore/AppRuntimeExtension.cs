@@ -4,7 +4,7 @@ namespace Basf.MongoStore
 {
     public static class AppRuntimeExtension
     {
-        public static void UsingCouchbaseStore(this AppRuntime objAppRuntime)
+        public static void UsingMongoStore(this AppRuntime objAppRuntime)
         {
             AppRuntime.RegisterType<ICommandStore, MongoCommandStore>(LifetimeStyle.Singleton);
             AppRuntime.RegisterType<IEventStore, MongoEventStore>(LifetimeStyle.Singleton);
