@@ -163,15 +163,13 @@ namespace Basf
                 throw new ArgumentNullException(objArgsName);
             }
         }
-        public static Task NotNullAsync(object objArgsValue, string objArgsName)
+        public static Task NotNullAsync(string objArgsName)
         {
-            return Task.Run(() =>
-            {
-                if (objArgsValue == null)
-                {
-                    throw new ArgumentNullException(objArgsName);
-                }
-            });
+            return Task.FromException(new ArgumentNullException(objArgsName));
+        }
+        public static Task<TResult> NotNullAsync<TResult>(string objArgsName)
+        {
+            return Task.FromException<TResult>(new ArgumentNullException(objArgsName));
         }
         public static void Fail(string strFormat, params object[] objArgs)
         {
@@ -201,16 +199,6 @@ namespace Basf
             {
                 throw new Exception(String.Format(strFormat, objArgs));
             }
-        }
-        public static Task FailAsync(bool bCondition, string strFormat, params object[] objArgs)
-        {
-            return Task.Run(() =>
-            {
-                if (bCondition)
-                {
-                    throw new Exception(String.Format(strFormat, objArgs));
-                }
-            });
         }
         #endregion
 

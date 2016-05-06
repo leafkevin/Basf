@@ -4,12 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D66F13ED-4FCE-4EA8-A1CD-28AE20D620BB}</ProjectGuid>
+    <ProjectGuid>{A1065495-466E-4BE7-8980-E6669D156ADC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Basf.Repository</RootNamespace>
-    <AssemblyName>Basf.Repository</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>Basf.DapperRepository</RootNamespace>
+    <AssemblyName>Basf.DapperRepository</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ASYNC</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -41,22 +41,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DapperRepositoryContext.cs" />
-    <Compile Include="Orm\Dapper.cs" />
-    <Compile Include="Orm\DapperAsync.cs" />
-    <Compile Include="Orm\IOrmProvider.cs" />
-    <Compile Include="Orm\DapperExtension.cs" />
-    <Compile Include="Orm\Attributes\ComputeAttribute.cs" />
-    <Compile Include="Orm\Attributes\IgnoreAttribute.cs" />
-    <Compile Include="Orm\Attributes\PrimaryKeyAttribute.cs" />
-    <Compile Include="Orm\Attributes\TableAttribute.cs" />
+    <Compile Include="AppRuntimeExtension.cs" />
+    <Compile Include="Repository.cs" />
+    <Compile Include="RepositoryContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DapperRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Basf.Domain\Basf.Domain.csproj">
       <Project>{9687db78-b1a1-4528-831d-f3b39fae8cc3}</Project>
       <Name>Basf.Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Basf.Orm\Basf.Orm.csproj">
+      <Project>{54656de3-e6e3-4552-9484-38745d5d87bd}</Project>
+      <Name>Basf.Orm</Name>
     </ProjectReference>
     <ProjectReference Include="..\Basf\Basf.csproj">
       <Project>{4e0b63ea-091c-4bf8-9b28-3ab1ff7e4659}</Project>

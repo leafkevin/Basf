@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Basf
+namespace Basf.Message
 {
-    public interface IMessage : IEntity<string>
+    public interface IMessage
     {
+        string UniqueId { get; }
         DateTime Timestamp { get; }
-        string RoutingKey { get; set; }
     }
     public interface IMessage<T> : IMessage
     {

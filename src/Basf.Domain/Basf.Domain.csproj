@@ -41,22 +41,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AggregateRoot.cs" />
+    <Compile Include="AggRoot.cs" />
     <Compile Include="AppRuntimeExtension.cs" />
-    <Compile Include="Command\DefaultCommandBus.cs" />
+    <Compile Include="AggRootKey.cs" />
+    <Compile Include="AggRootChangeKey.cs" />
+    <Compile Include="Command\CommandProcessor.cs" />
+    <Compile Include="Command\CommandResult.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Command\CommandContext.cs" />
+    <Compile Include="DomainContext.cs" />
+    <Compile Include="IAggRoot.cs" />
+    <Compile Include="Event\EventResult.cs" />
+    <Compile Include="Command\ICommandContext.cs" />
+    <Compile Include="IDomainContext.cs" />
+    <Compile Include="Command\ICommandProcessor.cs" />
+    <Compile Include="HandlerFactory.cs" />
     <Compile Include="Storage\ICommandStore.cs" />
-    <Compile Include="Command\ICommandBus.cs" />
     <Compile Include="Command\ICommandHandler.cs" />
     <Compile Include="Command\Command.cs" />
-    <Compile Include="Event\DefaultEventBus.cs" />
-    <Compile Include="Event\IEventBus.cs" />
-    <Compile Include="IDomainContext.cs" />
     <Compile Include="Event\DomainEvent.cs" />
     <Compile Include="Command\ICommand.cs" />
     <Compile Include="Event\IDomainEvent.cs" />
     <Compile Include="Event\IEventHandler.cs" />
-    <Compile Include="IAggregateRoot.cs" />
-    <Compile Include="Event\IEventSourcing.cs" />
+    <Compile Include="IEventSourcing.cs" />
     <Compile Include="Repository\IRepository.cs" />
     <Compile Include="Repository\IRepositoryContext.cs" />
     <Compile Include="IUnitOfWork.cs" />

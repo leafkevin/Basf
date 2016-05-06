@@ -33,6 +33,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MongoDB.Bson, Version=2.2.3.3, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Bson.2.2.3\lib\net45\MongoDB.Bson.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MongoDB.Driver, Version=2.2.3.3, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.2.2.3\lib\net45\MongoDB.Driver.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Core, Version=2.2.3.3, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.Core.2.2.3\lib\net45\MongoDB.Driver.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -42,22 +54,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\Event\OrderCommodityAdded.cs" />
+    <Compile Include="Domain\Event\UserLocked.cs" />
+    <Compile Include="Domain\Event\UserNameChanged.cs" />
     <Compile Include="Domain\Model\Order.cs" />
     <Compile Include="Domain\Model\User.cs" />
+    <Compile Include="Domain\ValueObject\Consignee.cs" />
+    <Compile Include="Domain\ValueObject\Goods.cs" />
+    <Compile Include="Domain\ValueObject\OrderStatus.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Basf.Autofac\Basf.Autofac.csproj">
       <Project>{d4ee20e2-109c-4447-8cc1-8961e006fdfe}</Project>
       <Name>Basf.Autofac</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Basf.DapperRepository\Basf.DapperRepository.csproj">
-      <Project>{a1065495-466e-4be7-8980-e6669d156adc}</Project>
-      <Name>Basf.DapperRepository</Name>
     </ProjectReference>
     <ProjectReference Include="..\Basf.Domain\Basf.Domain.csproj">
       <Project>{9687db78-b1a1-4528-831d-f3b39fae8cc3}</Project>
@@ -79,13 +94,16 @@
       <Project>{54656de3-e6e3-4552-9484-38745d5d87bd}</Project>
       <Name>Basf.Orm</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Basf.Repository\Basf.Repository.csproj">
+      <Project>{a1065495-466e-4be7-8980-e6669d156adc}</Project>
+      <Name>Basf.Repository</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Basf\Basf.csproj">
       <Project>{4e0b63ea-091c-4bf8-9b28-3ab1ff7e4659}</Project>
       <Name>Basf</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Domain\Event\" />
     <Folder Include="Domain\Repository\" />
     <Folder Include="Domain\Service\" />
   </ItemGroup>

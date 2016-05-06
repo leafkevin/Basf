@@ -15,7 +15,7 @@ namespace Basf.Domain.Repository
         Task<int> DeleteAsync(object objKey);
         Task<int> UpdateAsync(TEntity entity, object objKey);
     }
-    public interface IRepository<TAggRoot, TAggRootId> : IRepository<TAggRoot> where TAggRoot : class, IAggregateRoot<TAggRootId>
+    public interface IRepository<TAggRoot, TAggRootId> : IRepository<TAggRoot> where TAggRoot : class, IAggRoot<TAggRootId>
     {
     }
 }

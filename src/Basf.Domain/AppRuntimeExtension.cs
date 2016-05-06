@@ -12,25 +12,34 @@ namespace Basf.Domain
         {
             if (assemblies != null)
             {
-                //注册Command Handler
-                Type handlerType = typeof(ICommandHandler<>);
-                var types = assemblies.SelectMany(assembly => assembly.GetTypes().Where(t => IsHandlerType(t, handlerType)));
-                foreach (var type in types)
+                RegisterCommandHandler(typeof(ICommandHandler<>), assemblies);
+                RegisterEventHandler(typeof(IEventHandler<>), assemblies);
+            }
+        }
+        private static void RegisterCommandHandler(Type handlerType, params Assembly[] assemblies)
+        {
+            var handlerTypes = assemblies.SelectMany(assembly => assembly.GetTypes().Where(t => IsHandlerType(t, handlerType)));
+            foreach (Type type in handlerTypes)
+            {
+                var ifaceTypes = type.GetInterfaces();
+                foreach (Type ifaceType in ifaceTypes)
                 {
-                    AppRuntime.RegisterType(handlerType, type, LifetimeStyle.Singleton);
-                }
-                //注册Event Handler
-                handlerType = typeof(IEventHandler<>);
-                types = assemblies.SelectMany(assembly => assembly.GetTypes().Where(t => IsHandlerType(t, handlerType)));
-                foreach (var type in types)
-                {
-                    AppRuntime.RegisterType(handlerType, type, LifetimeStyle.Singleton);
+                    AppRuntime.RegisterType(ifaceType, type, LifetimeStyle.Singleton);
                 }
             }
         }
-        private static bool IsHandlerType(Type type, Type handlerType)
+        private static void RegisterEventHandler(Type handlerType, params Assembly[] assemblies)
         {
-            return type != null && type.IsClass && !type.IsAbstract && type.IsAssignableFrom(handlerType);
+            var aggRootTypes = assemblies.SelectMany(assembly => assembly.GetTypes().Where(t => IsHandlerType(t, handlerType)));
+            foreach (Type aggRootType in aggRootTypes)
+            {
+                Type eventType = aggRootType.GenericTypeArguments[0];
+                AppRuntime.Resolve<IDomainContext>().AddEventHandler(aggRootType, eventType);
+            }
+        }
+        private static bool IsHandlerType(Type type, Type HandlerType)
+        {
+            return type.IsClass && !type.IsAbstract && type.IsAssignableFrom(HandlerType);
         }
     }
 }

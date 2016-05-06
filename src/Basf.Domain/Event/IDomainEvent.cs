@@ -1,10 +1,17 @@
-﻿namespace Basf.Domain.Event
+﻿using Basf.Message;
+using System;
+
+namespace Basf.Domain.Event
 {
-    public interface IDomainEvent<TAggRootId> : IMessage
+    public interface IDomainEvent : IMessage, IComparable, IComparable<IDomainEvent>, IEquatable<IDomainEvent>
     {
-        string EventType { get; set; }
-        string CommandId { get; }
-        TAggRootId AggRootId { get; }
-        int Version { get; }
+        string AggRootType { get; set; }
+        string AggRootId { get; set; }
+        string CommandId { get; set; }
+        int Version { get; set; }
+    }
+    public interface IDomainEvent<TAggRootId> : IDomainEvent, IComparable<IDomainEvent<TAggRootId>>, IEquatable<IDomainEvent<TAggRootId>>
+    {
+        new TAggRootId AggRootId { get; set; }
     }
 }

@@ -1,11 +1,10 @@
-﻿namespace Basf.Domain.Command
+﻿using System.Threading.Tasks;
+
+namespace Basf.Domain.Command
 {
-    public interface ICommandHandler : ICommand
-    {
-        void Execute(ICommand command);
-    }
-    public interface ICommandHandler<TCommand> : ICommandHandler where TCommand : class, ICommand
+    public interface ICommandHandler<TCommand> where TCommand : class, ICommand
     {
         void Execute(TCommand command);
+        Task ExecuteAsync(TCommand command);
     }
 }

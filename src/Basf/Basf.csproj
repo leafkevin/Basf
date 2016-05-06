@@ -45,7 +45,8 @@
     <Compile Include="Container\AbsfContainerExtensions.cs" />
     <Compile Include="AppRuntime.cs" />
     <Compile Include="Data\PromiseResult.cs" />
-    <Compile Include="Message\IHandlerProvider.cs" />
+    <Compile Include="Message\IConsumer.cs" />
+    <Compile Include="Message\IProducer.cs" />
     <Compile Include="Message\Message.cs" />
     <Compile Include="Message\IHandler.cs" />
     <Compile Include="Message\IMessage.cs" />

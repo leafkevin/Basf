@@ -1,4 +1,5 @@
 ﻿using Basf.Domain.Storage;
+using Basf.Logging;
 
 namespace Basf.MongoStore
 {
@@ -6,9 +7,9 @@ namespace Basf.MongoStore
     {
         public static void UsingMongoStore(this AppRuntime objAppRuntime)
         {
-            AppRuntime.RegisterType<ICommandStore, MongoCommandStore>(LifetimeStyle.Singleton);
-            AppRuntime.RegisterType<IEventStore, MongoEventStore>(LifetimeStyle.Singleton);
-            AppRuntime.RegisterType<ISnapshotStore, MongoSnapshotStore>(LifetimeStyle.Singleton);
+            //AppRuntime.RegisterType<ILogger, MongoLogger>(LifetimeStyle.Singleton);
+            //AppRuntime.RegisterType<IEventStore, MongoEventStore>(LifetimeStyle.Singleton);
+            //AppRuntime.RegisterType<ISnapshotStore, MongoSnapshotStore>(LifetimeStyle.Singleton);
         }
     }
 }

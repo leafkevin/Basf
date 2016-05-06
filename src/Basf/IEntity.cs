@@ -2,8 +2,9 @@
 {
     public interface IEntity
     {
+        string UniqueId { get; }
     }
-    public interface IEntity<TUniqueId> : IEntity
+    public interface IEntity<TUniqueId>
     {
         TUniqueId UniqueId { get; }
     }

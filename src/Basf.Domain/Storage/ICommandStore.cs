@@ -5,8 +5,10 @@ namespace Basf.Domain.Storage
 {
     public interface ICommandStore
     {
-        void Add<TCommand>(params TCommand[] commands) where TCommand : class, ICommand;
-        Task AddAsync<TCommand>(params TCommand[] commands) where TCommand : class, ICommand;
+        CommandResult Add(params ICommand[] commands);
+        Task<CommandResult> AddAsync(params ICommand[] commands);
+        void UpdateResult(ICommand commmand, CommandResult result);
+        Task UpdateResultAsync(ICommand commmand, CommandResult result);
         TCommand Get<TCommand>(string commandId) where TCommand : class, ICommand;
         Task<TCommand> GetAsync<TCommand>(string commandId) where TCommand : class, ICommand;
     }
