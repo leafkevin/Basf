@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client;
 
-namespace Basf.Rabbit
+namespace Basf.Rabbitmq
 {
     public class ChannelPool
     {

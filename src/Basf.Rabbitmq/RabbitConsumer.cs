@@ -1,16 +1,13 @@
 ﻿using Basf.Message;
 using System;
 
-namespace Basf.Rabbit
+namespace Basf.Rabbitmq
 {
     public class RabbitConsumer : IConsumer
     {
         public int TotalCount
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
         }
         public void Ack(object ackKey)
         {

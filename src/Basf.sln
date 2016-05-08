@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basf.Repository", "Basf.Rep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainTest", "DomainTest\DomainTest.csproj", "{DB29E514-540E-4AAE-AC4C-961919A1BF47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basf.Rabbit", "Basf.Rabbit\Basf.Rabbit.csproj", "{F3A974D0-F29A-49EE-940B-9E5C55A34B88}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basf.Rabbitmq", "Basf.Rabbitmq\Basf.Rabbitmq.csproj", "{F3A974D0-F29A-49EE-940B-9E5C55A34B88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

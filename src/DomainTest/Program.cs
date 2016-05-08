@@ -1,11 +1,9 @@
 ﻿using Basf;
 using Basf.Autofac;
-using Basf.Domain.Repository;
 using Basf.Log4net;
 using Basf.MongoStore;
 using Basf.Repository;
 using Basf.Orm;
-using DomainTest.Domain.Model;
 using System.Data.SqlClient;
 using System.Reflection;
 using Basf.Domain;
@@ -18,9 +16,6 @@ namespace DomainTest
     {
         static void Main(string[] args)
         {
-            BankAccount account1 = new BankAccount(1, 1, 100);
-            BankAccount account2 = new BankAccount(2, 2, 100);
-
             //DDD领域 C端使用
             AppRuntime.Configure(f =>
               f.UsingContainer(new AutofacContainer())
@@ -29,6 +24,7 @@ namespace DomainTest
                .UsingMongoStore()
                .UsingDomain(Assembly.GetExecutingAssembly())
             );
+            TestBankAccountTransfer().Wait();
         }
         public static async Task TestBankAccountTransfer()
         {

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Basf.Message;
 
-namespace Basf.Rabbit
+namespace Basf.Rabbitmq
 {
     public class RabbitProducer : IProducer
     {

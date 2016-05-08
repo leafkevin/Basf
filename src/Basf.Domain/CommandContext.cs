@@ -1,4 +1,5 @@
 ﻿using Basf.Data;
+using Basf.Domain.Command;
 using Basf.Domain.Storage;
 using Basf.Message;
 using System;
@@ -6,7 +7,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Basf.Domain.Command
+namespace Basf.Domain
 {
     public class CommandContext : ICommandContext
     {

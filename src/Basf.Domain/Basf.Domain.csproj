@@ -48,18 +48,18 @@
     <Compile Include="Command\CommandResult.cs" />
     <Compile Include="DomainError.cs" />
     <Compile Include="DomainExtensions.cs" />
-    <Compile Include="Command\CommandContext.cs" />
+    <Compile Include="CommandContext.cs" />
     <Compile Include="DomainContext.cs" />
     <Compile Include="IAggRoot.cs" />
     <Compile Include="Event\EventResult.cs" />
-    <Compile Include="Command\ICommandContext.cs" />
+    <Compile Include="ICommandContext.cs" />
     <Compile Include="IDomainContext.cs" />
     <Compile Include="HandlerFactory.cs" />
     <Compile Include="Storage\CommandStoreResult.cs" />
     <Compile Include="Storage\EventStoreResult.cs" />
     <Compile Include="Storage\ICommandStore.cs" />
     <Compile Include="Command\ICommandHandler.cs" />
-    <Compile Include="bin\AbstractCommand.cs" />
+    <Compile Include="Command\AbstractCommand.cs" />
     <Compile Include="Event\DomainEvent.cs" />
     <Compile Include="Command\ICommand.cs" />
     <Compile Include="Event\IDomainEvent.cs" />
@@ -78,7 +78,9 @@
       <Name>Basf</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="bin\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
