@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Basf.Domain;
 using MongoDB.Driver;
-using MongoDB.Bson;
 
 namespace Basf.MongoStore
 {
@@ -16,25 +15,23 @@ namespace Basf.MongoStore
         }
         public void Create(IAggRoot aggRoot)
         {
-            var collection = this.db.GetCollection<BsonDocument>(aggRoot.GetType().Name);
-            var filter = Builders<BsonDocument>.Filter.Eq("UniqueId", aggRoot.UniqueId);
-            collection.ReplaceOne(filter, aggRoot.ToBsonDocument());
+            var collection = this.db.GetCollection<IAggRoot>(aggRoot.GetType().Name);
+            collection.ReplaceOne(f => f.UniqueId == aggRoot.UniqueId, aggRoot);
         }
         public async Task CreateAsync(IAggRoot aggRoot)
         {
-            var collection = this.db.GetCollection<BsonDocument>(aggRoot.GetType().Name);
-            var filter = Builders<BsonDocument>.Filter.Eq("UniqueId", aggRoot.UniqueId);
-            await collection.ReplaceOneAsync(filter, aggRoot.ToBsonDocument());
+            var collection = this.db.GetCollection<IAggRoot>(aggRoot.GetType().Name);
+            await collection.ReplaceOneAsync(f => f.UniqueId == aggRoot.UniqueId, aggRoot);
         }
-        public TAggRoot Get<TAggRoot, TAggRootId>(TAggRootId aggRootId) where TAggRoot : class, IAggRoot<TAggRootId>
+        public IAggRoot Get(string aggRootName, string aggRootId)
         {
-            var collection = this.db.GetCollection<TAggRoot>(typeof(TAggRoot).Name);
-            return collection.Find(f => f.UniqueId.Equals(aggRootId)).FirstOrDefault();
+            var collection = this.db.GetCollection<IAggRoot>(aggRootName);
+            return collection.Find(f => f.UniqueId == aggRootId).FirstOrDefault();
         }
-        public async Task<TAggRoot> GetAsync<TAggRoot, TAggRootId>(TAggRootId aggRootId) where TAggRoot : class, IAggRoot<TAggRootId>
+        public async Task<IAggRoot> GetAsync(string aggRootName, string aggRootId)
         {
-            var collection = this.db.GetCollection<TAggRoot>(typeof(TAggRoot).Name);
-            return await collection.Find(f => f.UniqueId.Equals(aggRootId)).FirstOrDefaultAsync();
+            var collection = this.db.GetCollection<IAggRoot>(aggRootName);
+            return await collection.Find(f => f.UniqueId == aggRootId).FirstOrDefaultAsync();
         }
     }
 }

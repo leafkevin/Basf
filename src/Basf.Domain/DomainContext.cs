@@ -1,8 +1,10 @@
-﻿using Basf.Domain.Event;
+﻿using Basf.Data;
+using Basf.Domain.Event;
 using Basf.Domain.Storage;
 using Basf.Message;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -11,27 +13,26 @@ namespace Basf.Domain
     public class DomainContext : IDomainContext
     {
         private ConcurrentDictionary<AggRootKey, IAggRoot> aggRoots = new ConcurrentDictionary<AggRootKey, IAggRoot>();
-        private ConcurrentDictionary<Type, Action<IAggRoot, IDomainEvent>> eventHandlers = new ConcurrentDictionary<Type, Action<IAggRoot, IDomainEvent>>();
+        private ConcurrentDictionary<Type, Func<IAggRoot, IDomainEvent, ActionResponse>> eventHandlers = new ConcurrentDictionary<Type, Func<IAggRoot, IDomainEvent, ActionResponse>>();
         private ConcurrentDictionary<int, BlockingCollection<IDomainEvent>> aggRootChanges = new ConcurrentDictionary<int, BlockingCollection<IDomainEvent>>();
-        private IProducer eventProducer = null;
-        private IDomainContext domainContext = null;
-        private IConsumer eventConsumer = null;
+        private IProducer producer = null;
+        private IConsumer consumer = null;
         private IEventStore eventStore = null;
-        private Func<IAggRoot, IDomainEvent, Task> acceptChange = null;
+        private Func<IAggRoot, IDomainEvent, Task<ActionResponse>> acceptChange = null;
         public int MailBoxPartition { get; private set; }
-        public DomainContext(IProducer eventProducer, IConsumer eventConsumer, IEventStore eventStore)
+        public DomainContext(IProducer producer, IConsumer consumer, IEventStore eventStore)
         {
-            this.eventProducer = eventProducer;
-            this.eventConsumer = eventConsumer;
+            this.producer = producer;
+            this.consumer = consumer;
             this.eventStore = eventStore;
         }
-        public void Initialize(Action<IProducer> eventProducerInitializer, Action<IConsumer> eventConsumerInitializer)
+        public void Initialize(Action<IProducer> producerInitializer, Action<IConsumer> consumerInitializer)
         {
-            this.acceptChange = HandlerFactory.CreateFuncHandler<IAggRoot, IDomainEvent>("AcceptChange",
-                BindingFlags.Instance | BindingFlags.NonPublic, typeof(IDomainEvent), typeof(AggRoot));
-            eventProducerInitializer?.Invoke(this.eventProducer);
-            eventConsumerInitializer?.Invoke(this.eventConsumer);
-            this.MailBoxPartition = this.eventConsumer.ConsumerCount;
+            this.acceptChange = HandlerFactory.CreateFuncHandler<IAggRoot, IDomainEvent, Task<ActionResponse>>("AcceptChange",
+                BindingFlags.Instance | BindingFlags.NonPublic, typeof(AggRoot), typeof(IDomainEvent));
+            producerInitializer?.Invoke(this.producer);
+            consumerInitializer?.Invoke(this.consumer);
+            this.MailBoxPartition = this.consumer.TotalCount;
             for (int i = 0; i < this.MailBoxPartition; i++)
             {
                 this.aggRootChanges.TryAdd(i, new BlockingCollection<IDomainEvent>());
@@ -39,28 +40,40 @@ namespace Basf.Domain
         }
         public void Start()
         {
-            this.eventConsumer.Start(async msg =>
+            this.consumer.Start(async (msg, ackKey) =>
             {
-                IDomainEvent domainEvent = msg as IDomainEvent;
-                IAggRoot aggRoot = await this.domainContext.GetAsync(domainEvent.ToAggRootKey());
+                Message<IDomainEvent> eventMsg = msg as Message<IDomainEvent>;
+                IDomainEvent domainEvent = eventMsg.Body;
+                IAggRoot aggRoot = await this.GetAsync(domainEvent.ToAggRootKey());
                 domainEvent.AggRootType = aggRoot.GetType().FullName;
                 domainEvent.AggRootId = aggRoot.UniqueId;
                 //先将事件的版本+1
                 domainEvent.Version = aggRoot.Version + 1;
-                EventResult result = await this.eventStore.AddAsync(domainEvent);
-                if (result == EventResult.Error)
+                ActionResponse<EventResult> result = await this.eventStore.AddAsync(domainEvent);
+                if (result.Result == ActionResult.Failed)
                 {
-                    //TODO
+                    //TODO 先记录日志，再抛出异常
                     await this.eventStore.UpdateResultAsync(domainEvent, EventResult.Error);
-                    //先记录日志，再抛出异常，理论上在存储里面我不做任何的try catch
+                    AppRuntime.ErrorFormat("事件:{0}存储异常,异常消息:{1}，异常明细:{2}", result.Message, result.Detail);
+                    return;
                 }
                 //事件已经执行过，则返回
-                else if (result >= EventResult.Executed)
+                if (result.ReturnData >= EventResult.Executed)
                 {
                     return;
                 }
                 //先验证事件版本的顺序，通过后，在事件的处理方法中，将聚合根的版本更新为事件的版本(+1后的版本)
-                await this.acceptChange(aggRoot, domainEvent);
+                var tResult = await this.acceptChange(aggRoot, domainEvent);
+                if (tResult.Result == ActionResult.Success)
+                {
+                    await this.eventStore.UpdateResultAsync(domainEvent, EventResult.Executed);
+                    this.consumer.Ack(ackKey);
+                }
+                else
+                {
+                    await this.eventStore.UpdateResultAsync(domainEvent, EventResult.Error);
+                    AppRuntime.ErrorFormat("事件:{0}存储异常,异常消息:{1}，异常明细:{2}", result.Message, result.Detail);
+                }
             });
         }
         public IAggRoot Get(AggRootKey aggRootKey)
@@ -77,40 +90,89 @@ namespace Basf.Domain
         }
         public Task AddAsync(IAggRoot aggRoot)
         {
-            return Task.Run(() => this.aggRoots.TryAdd(aggRoot.ToAggRootKey(), aggRoot));
+            return Task.Run(() =>
+            {
+                this.aggRoots.TryAdd(aggRoot.ToAggRootKey(), aggRoot);
+            });
         }
-        public void Apply(IDomainEvent domainEvent)
+        public async Task<ActionResponse> ApplyChange(IDomainEvent domainEvent)
         {
             AggRootKey changeKey = domainEvent.ToAggRootKey();
             int routingKey = changeKey.GetHashCode() % this.MailBoxPartition;
             this.aggRootChanges[routingKey].Add(domainEvent);
-        }
-        public Task ApplyAsync(IDomainEvent domainEvent)
-        {
-            return Task.Run(() =>
+            if (!this.aggRoots.ContainsKey(domainEvent.ToAggRootKey()))
             {
-                AggRootKey changeKey = domainEvent.ToAggRootKey();
-                int routingKey = changeKey.GetHashCode() % this.MailBoxPartition;
-                this.aggRootChanges[routingKey].Add(domainEvent);
-            });
+                await this.AddAggRoot(domainEvent);
+            }
+            return ActionResponse.Success;
         }
-        public void Publish(IDomainEvent domainEvent)
+        public ActionResponse Publish(IDomainEvent domainEvent)
         {
-            this.eventProducer.Publish(domainEvent);
+            try
+            {
+                var msg = new Message<IDomainEvent>(domainEvent);
+                msg.RoutingKey = domainEvent.ToAggRootKey().ToString();
+                this.producer.Publish(new Message<IDomainEvent>(domainEvent));
+            }
+            catch (Exception ex)
+            {
+                return ActionResponse.Fail((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
+            }
+            return ActionResponse.Success;
         }
-        public async Task PublishAsync(IDomainEvent domainEvent)
+        public async Task<ActionResponse> PublishAsync(IDomainEvent domainEvent)
         {
-            await this.eventProducer.PublishAsync(domainEvent);
+            try
+            {
+                await this.producer.PublishAsync(new Message<IDomainEvent>(domainEvent));
+            }
+            catch (Exception ex)
+            {
+                return ActionResponse.Fail((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
+            }
+            return ActionResponse.Success;
         }
-        public Action<IAggRoot, IDomainEvent> GetEventHandler(Type eventType)
+        public ActionResponse InvokeHandler(IAggRoot aggRoot, IDomainEvent domainEvent)
         {
-            return this.eventHandlers[eventType];
+            try
+            {
+                Type aggRootType = aggRoot.GetType();
+                Type eventType = domainEvent.GetType();
+                var handler = this.eventHandlers.GetOrAdd(eventType,
+                    HandlerFactory.CreateFuncHandler<IAggRoot, IDomainEvent, ActionResponse>("Handle",
+                    BindingFlags.Instance | BindingFlags.Public, aggRootType, eventType));
+                return handler.Invoke(aggRoot, domainEvent);
+            }
+            catch (Exception ex)
+            {
+                return ActionResponse.Fail((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
+            }
         }
-        public void AddEventHandler(Type aggRootType, Type eventType)
+        public void AddHandler(Type aggRootType, Type eventType)
         {
-            var eventHandler = HandlerFactory.CreateActionHandler<IAggRoot, IDomainEvent>("Handle",
-                BindingFlags.Instance | BindingFlags.Public, eventType, aggRootType);
-            this.eventHandlers.TryAdd(eventType, eventHandler);
+            this.eventHandlers.TryAdd(eventType,
+                 HandlerFactory.CreateFuncHandler<IAggRoot, IDomainEvent, ActionResponse>("Handle",
+                 BindingFlags.Instance | BindingFlags.Public, aggRootType, eventType));
+        }
+        private async Task<ActionResponse> AddAggRoot(IDomainEvent domainEvent)
+        {
+            var aggRootKey = domainEvent.ToAggRootKey();
+            if (!this.aggRoots.ContainsKey(aggRootKey))
+            {
+                Type aggRootType = Type.GetType(domainEvent.AggRootType);
+                //从仓储中获取聚合根
+                //Type repositoryType = typeof(IRepository<>).MakeGenericType(aggRootType);
+                //var repository = AppRuntime.Resolve(repositoryType);
+                //IAggRoot aggRoot = await this.aggRootGetHandler.Invoke(repository);
+                //从快照中获取聚合根
+                IAggRoot aggRoot = await AppRuntime.Resolve<ISnapshotStore>().GetAsync(aggRootType.Name, domainEvent.AggRootId);
+                List<IDomainEvent> domainEvents = await AppRuntime.Resolve<IEventStore>().FindAsync(aggRootType.Name, domainEvent.AggRootId, aggRoot.Version + 1);
+                IEventSourcing eventSourcingAggRoot = aggRoot as IEventSourcing;
+                await eventSourcingAggRoot.ReplayFrom(domainEvents);
+                await this.AddAsync(aggRoot);
+            }
+            return ActionResponse.Success;
         }
     }
+
 }

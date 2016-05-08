@@ -12,6 +12,7 @@ namespace Basf.Repository
         {
             objAppRuntime.UsingOrmDapper<TConnection, TOrmProvider>(connKey);
             AppRuntime.RegisterGeneric(typeof(IRepository<>), typeof(Repository<>), LifetimeStyle.Thread);
+            AppRuntime.RegisterType<IRepositoryContext, RepositoryContext>(LifetimeStyle.Thread);
             return AppRuntime.Instance;
         }
     }

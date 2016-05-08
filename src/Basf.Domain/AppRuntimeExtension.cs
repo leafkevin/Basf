@@ -8,7 +8,14 @@ namespace Basf.Domain
 {
     public static class AppRuntimeExtension
     {
-        public static void RegisterHandlers(params Assembly[] assemblies)
+        public static AppRuntime UsingDomain(this AppRuntime objAppRuntime, params Assembly[] assemblies)
+        {
+            AppRuntime.RegisterType<ICommandContext, CommandContext>(LifetimeStyle.Singleton);
+            AppRuntime.RegisterType<IDomainContext, DomainContext>(LifetimeStyle.Singleton);
+            RegisterHandlers(assemblies);
+            return AppRuntime.Instance;
+        }
+        private static void RegisterHandlers(params Assembly[] assemblies)
         {
             if (assemblies != null)
             {
@@ -34,7 +41,7 @@ namespace Basf.Domain
             foreach (Type aggRootType in aggRootTypes)
             {
                 Type eventType = aggRootType.GenericTypeArguments[0];
-                AppRuntime.Resolve<IDomainContext>().AddEventHandler(aggRootType, eventType);
+                AppRuntime.Resolve<IDomainContext>().AddHandler(aggRootType, eventType);
             }
         }
         private static bool IsHandlerType(Type type, Type HandlerType)

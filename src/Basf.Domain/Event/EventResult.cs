@@ -2,10 +2,8 @@
 {
     public enum EventResult
     {
-        None,
         Error,
         Stored,
-        Executed,
-        Finished
+        Executed
     }
 }

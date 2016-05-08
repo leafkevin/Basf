@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using Basf.Data;
+using System.Threading.Tasks;
 
 namespace Basf.Domain.Event
 {
     public interface IEventHandler<TEvent> where TEvent : class, IDomainEvent
     {
-        void Handle(TEvent domainEvent);
-        Task HandleAsync(TEvent domainEvent);
+        Task<ActionResponse> Handle(TEvent domainEvent);
     }
 }

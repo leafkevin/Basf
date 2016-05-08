@@ -8,19 +8,12 @@ namespace Basf.Domain.Event
         public string AggRootType { get; set; }
         public TAggRootId AggRootId { get; set; }
         public string CommandId { get; set; }
-        public string RoutingKey { get; set; }
         public DateTime Timestamp { get; private set; }
         public int Version { get; set; }
         string IDomainEvent.AggRootId
         {
-            get
-            {
-                return this.AggRootId.ToString();
-            }
-            set
-            {
-                this.AggRootId = (TAggRootId)Convert.ChangeType(value, typeof(TAggRootId));
-            }
+            get { return this.AggRootId.ToString(); }
+            set { this.AggRootId = Utility.ConvertTo<TAggRootId>(value); }
         }
         public DomainEvent(string commandId)
         {
@@ -46,7 +39,7 @@ namespace Basf.Domain.Event
         public int CompareTo(DomainEvent<TAggRootId> other)
         {
             return this.ToString().CompareTo(other.ToString());
-        }       
+        }
         public int CompareTo(IDomainEvent other)
         {
             return this.ToString().CompareTo(other.ToString());

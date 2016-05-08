@@ -8,7 +8,6 @@ namespace Basf.Domain
     {
         void Execute(ICommand command);
         Task ExecuteAsync(ICommand command);
-        Func<object, ICommand, Task> GetCommandHandler(Type commandType);
-        void AddCommandHandler(Type handlerType, Type commandType);
+        void AddHandler(Type handlerType, Type commandType);
     }
 }

@@ -4,7 +4,7 @@ using Basf.Domain.Event;
 using System.Linq;
 using Basf.Domain.Storage;
 using System.Threading.Tasks;
-using System.Reflection;
+using Basf.Data;
 
 namespace Basf.Domain
 {
@@ -17,16 +17,16 @@ namespace Basf.Domain
         {
             this.UniqueId = uniqueId;
             this.Version = 0;
-        }       
-        protected async Task ApplyChange(IDomainEvent domainEvent)
-        {
-            await AppRuntime.Resolve<IDomainContext>().PublishAsync(domainEvent);
         }
-        protected async Task AcceptChange(IDomainEvent domainEvent)
+        protected async Task<ActionResponse> ApplyChange(IDomainEvent domainEvent)
+        {
+            return await AppRuntime.Resolve<IDomainContext>().ApplyChange(domainEvent);
+        }
+        protected async Task<ActionResponse> AcceptChange(IDomainEvent domainEvent)
         {
             if (this.VerifyEvent(domainEvent))
             {
-                await this.HandleEvent(domainEvent);
+                return await this.HandleEvent(domainEvent);
             }
             else
             {
@@ -39,7 +39,13 @@ namespace Basf.Domain
                         await this.HandleEvent(domainEvent);
                         this.uncommittedEvents.RemoveAt(0);
                     }
+                    if (!this.uncommittedEvents.Contains(domainEvent))
+                    {
+                        return ActionResponse.Success;
+                    }
                 }
+                return ActionResponse.Fail((int)DomainError.EventExecuteAggRootVersionError, String.Format("事件执行异常，聚合根{0}版本Version：{1},最小事件版本Version：{2},当前事件版本Version：{3}",
+                    this.ToString(), this.Version, this.uncommittedEvents[0].Version, domainEvent.Version));
             }
         }
         protected bool VerifyEvent(IDomainEvent domainEvent)
@@ -62,21 +68,22 @@ namespace Basf.Domain
         {
             return String.Format("{{AggRootType:{0},AggRootId:{1}}}", this.GetType().FullName, this.UniqueId);
         }
-        private async Task HandleEvent(IDomainEvent domainEvent)
+        private async Task<ActionResponse> HandleEvent(IDomainEvent domainEvent)
         {
-            Type eventType = domainEvent.GetType();
-            Type handlerType = this.GetType();
-            var handler = AppRuntime.Resolve<IDomainContext>().GetEventHandler(eventType);
-            if (handler == null)
+            var domainContext = AppRuntime.Resolve<IDomainContext>();
+            var result = domainContext.InvokeHandler(this, domainEvent);
+            if (result.Result == ActionResult.Failed)
             {
-                handler = HandlerFactory.CreateActionHandler<IAggRoot, IDomainEvent>("Handle",
-                    BindingFlags.Instance | BindingFlags.Public, eventType, handlerType);
-                AppRuntime.Resolve<IDomainContext>().AddEventHandler(handlerType, eventType);
+                return result;
             }
-            handler.Invoke(this, domainEvent);
-            await AppRuntime.Resolve<IDomainContext>().PublishAsync(domainEvent);
+            result = await domainContext.PublishAsync(domainEvent);
+            if (result.Result == ActionResult.Failed)
+            {
+                return result;
+            }
             await AppRuntime.Resolve<IEventStore>().UpdateResultAsync(domainEvent, EventResult.Executed);
             this.Version = domainEvent.Version;
+            return result;
         }
     }
     [Serializable]

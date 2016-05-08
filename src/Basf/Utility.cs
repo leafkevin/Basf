@@ -68,85 +68,49 @@ namespace Basf
         #endregion
 
         #region ConvertTo
-        public static T ConvertTo<T>(object objValue, T objDefault)
+        public static T ConvertTo<T>(object objValue, T objDefault=default(T))
         {
             if (objValue == null || objValue is DBNull)
             {
                 return objDefault;
             }
             Type type = typeof(T);
-            if (type.IsValueType && type.IsGenericType)
+            if (type.IsValueType)
             {
-                type = Nullable.GetUnderlyingType(type);
-            }
-            if (objValue is string && type == typeof(Guid))
-            {
-                return (T)(Activator.CreateInstance(type, objValue));
-            }
-            if (objValue is string && type == typeof(TimeSpan))
-            {
-                object objResult = TimeSpan.Parse(objValue.ToString());
-                return (T)(objResult);
-            }
-            if (typeof(IConvertible).IsAssignableFrom(type))
-            {
-                return (T)(Convert.ChangeType(objValue, type));
-            }
-            return (T)objValue;
-        }
-        public static T ConvertTo<T>(object objValue)
-        {
-            return ConvertTo<T>(objValue, default(T));
-        }
-        public static T ConvertTo<T>(object objValue, T objValue1, T objDefault)
-        {
-            T objResult = ConvertTo<T>(objValue, objDefault);
-            if (objResult.Equals(objValue1))
-            {
-                return objDefault;
-            }
-            return objResult;
-        }
-        private object ChangeType(object value, Type type)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-            if (value != null && type.IsGenericType)
-            {
-                return Activator.CreateInstance(type);
-            }
-            if (type == value.GetType())
-            {
-                return value;
-            }
-            if (type.IsEnum)
-            {
-                if (value is string)
+                if (type.IsGenericType)
                 {
-                    return Enum.Parse(type, value as string);
+                    type = Nullable.GetUnderlyingType(type);
+                }
+                if (type.IsEnum)
+                {
+                    if (objValue is string)
+                    {
+                        return (T)Enum.Parse(type, objValue as string);
+                    }
+                    else
+                    {
+                        return (T)Enum.ToObject(type, objValue);
+                    }
                 }
                 else
                 {
-                    return Enum.ToObject(type, value);
+                    if (type == typeof(Guid))
+                    {
+                        object objResult = Guid.Parse(objValue.ToString());
+                        return (T)objResult;
+                    }
+                    else if (type == typeof(TimeSpan))
+                    {
+                        object objResult = TimeSpan.Parse(objValue.ToString());
+                        return (T)(objResult);
+                    }
+                    else if (typeof(IConvertible).IsAssignableFrom(type))
+                    {
+                        return (T)(Convert.ChangeType(objValue, type));
+                    }
                 }
             }
-            if (!type.IsInterface && type.IsGenericType)
-            {
-                Type innerType = type.GetGenericArguments()[0];
-                object innerValue = ChangeType(value, innerType);
-                return Activator.CreateInstance(type, new object[] { innerValue });
-            }
-            if (value is string && type == typeof(Guid))
-            {
-                return new Guid(value as string);
-            }
-            if (value is string && type == typeof(Version))
-            {
-                return new Version(value as string);
-            }
-            return value;
+            return (T)objValue;
         }
         #endregion
 

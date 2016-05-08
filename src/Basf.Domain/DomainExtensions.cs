@@ -2,7 +2,7 @@
 
 namespace Basf.Domain
 {
-    public static class Extensions
+    public static class DomainExtensions
     {
         public static AggRootKey ToAggRootKey(this IDomainEvent domainEvent)
         {

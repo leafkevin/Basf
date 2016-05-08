@@ -3,7 +3,7 @@ using System;
 
 namespace Basf.Domain.Event
 {
-    public interface IDomainEvent : IMessage, IComparable, IComparable<IDomainEvent>, IEquatable<IDomainEvent>
+    public interface IDomainEvent : IComparable, IComparable<IDomainEvent>, IEquatable<IDomainEvent>
     {
         string AggRootType { get; set; }
         string AggRootId { get; set; }

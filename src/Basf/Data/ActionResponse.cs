@@ -2,44 +2,47 @@
 {
     public class ActionResponse
     {
-        public PromiseResult Promise { get; protected set; }
+        private static readonly ActionResponse successResponse = new ActionResponse(ActionResult.Success);
+        public ActionResult Result { get; protected set; }
+        /// <summary>
+        /// 使用各种自定义的枚举来定义各自的错误代码
+        /// </summary>
+        public int Code { get; protected set; }
         public string Message { get; protected set; }
         public string Detail { get; protected set; }
-        protected ActionResponse(PromiseResult promise, string message = null, string detail = null)
+        public static ActionResponse Success { get { return successResponse; } }
+        protected ActionResponse(ActionResult result, int code = 0, string message = null, string detail = null)
         {
-            this.Promise = promise;
+            this.Result = result;
+            this.Code = code;
             this.Message = message;
             this.Detail = detail;
         }
-        public static ActionResponse Success()
+        public static ActionResponse<T> Succeed<T>(T result = default(T))
         {
-            return new ActionResponse(PromiseResult.Resolved);
+            return new ActionResponse<T>(ActionResult.Success, result);
         }
-        public static ActionResponse<T> Success<T>(T result = default(T))
+        public static ActionResponse Fail(int code, string message, string detail = null)
         {
-            return new ActionResponse<T>(PromiseResult.Resolved, result);
+            return new ActionResponse(ActionResult.Failed, code, message, detail);
         }
-        public static ActionResponse Fail(string message, string detail = null)
+        public static ActionResponse<T> Fail<T>(int code, string message, string detail = null)
         {
-            return new ActionResponse(PromiseResult.Rejected, message, detail);
-        }
-        public static ActionResponse<T> Fail<T>(string message, string detail = null)
-        {
-            return new ActionResponse<T>(PromiseResult.Rejected, message, detail, default(T));
+            return new ActionResponse<T>(ActionResult.Failed, code, message, detail, default(T));
         }
     }
     public class ActionResponse<T> : ActionResponse
     {
-        public T Result { get; private set; }
-        internal protected ActionResponse(PromiseResult promise, T result)
-           : base(promise)
+        public T ReturnData { get; private set; }
+        internal protected ActionResponse(ActionResult result, T returnData)
+           : base(result)
         {
-            this.Result = result;
+            this.ReturnData = returnData;
         }
-        internal protected ActionResponse(PromiseResult promise, string message, string detail, T result)
-            : base(promise, message, detail)
+        internal protected ActionResponse(ActionResult result, int code, string message, string detail, T returnData)
+            : base(result, code, message, detail)
         {
-            this.Result = result;
+            this.ReturnData = returnData;
         }
     }
 }

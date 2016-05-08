@@ -4,6 +4,7 @@ namespace Basf.Message
 {
     public interface IMessage
     {
+        string RoutingKey { get; set; }
         string UniqueId { get; }
         DateTime Timestamp { get; }
     }

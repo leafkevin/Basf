@@ -20,19 +20,22 @@ namespace ConsoleTest
     {
         static void Main(string[] args)
         {
-            ////DDD领域 C端使用
-            //AppRuntime.Configure(f =>
-            //  f.UsingContainer(new AutofacContainer())
-            //   .UsingLogger<Log4NetLogger>()
-            //   .UsingLogger<MongoLogger>()
-            //   .UsingDapperRepository<SqlConnection, DefaultOrmProvider>("STS")
-            //   .UsingMongoStore()
-            //);
-            ////泛型注册方式
-            //AppRuntime.RegisterGeneric(typeof(IRepository<>), typeof(Repository<>), LifetimeStyle.Request);
-            ////上面都是初始化注册
+            //DDD领域 C端使用
+            AppRuntime.Configure(f =>
+              f.UsingContainer(new AutofacContainer())
+               .UsingLogger<Log4NetLogger>()
+               //.UsingLogger<MongoLogger>()
+               .UsingDapperRepository<SqlConnection, DefaultOrmProvider>("STS")
+               .UsingMongoStore()
+            );
+            //泛型注册方式
+            AppRuntime.RegisterGeneric(typeof(IRepository<>), typeof(Repository<>), LifetimeStyle.Request);
+            //上面都是初始化注册
 
-            ////下面是具体使用
+            //下面是具体使用
+
+
+
             //IRepositoryContext context = AppRuntime.Resolve<IRepositoryContext>();
             //IRepository<User> userRepository = context.RepositoryFor<User>();
             //IRepository<Order> orderRepository = context.RepositoryFor<Order>();

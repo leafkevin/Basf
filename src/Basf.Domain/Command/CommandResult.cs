@@ -1,10 +1,10 @@
-﻿namespace Basf.Domain.Command
+﻿
+namespace Basf.Domain.Command
 {
     public enum CommandResult
     {
-        None,
+        Error,
         Stored,
-        Executed,
-        Error
+        Executed
     }
 }

@@ -1,6 +1,6 @@
-﻿using Basf.Domain.Event;
+﻿using Basf.Data;
+using Basf.Domain.Event;
 using Basf.Domain.Storage;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -16,105 +16,73 @@ namespace Basf.MongoStore
             MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore"));
             this.db = client.GetDatabase("EventStore");
         }
-        public EventResult Add(params IDomainEvent[] domainEvents)
+        public ActionResponse<EventResult> Add(IDomainEvent domainEvent)
         {
-            IMongoCollection<BsonDocument> collection = null;
-            IMongoCollection<BsonDocument> resultCollection = null;
+            IMongoCollection<IDomainEvent> collection = null;
+            IMongoCollection<EventStoreResult> resultCollection = null;
             try
             {
-                if (domainEvents != null)
-                {
-                    Type type = domainEvents[0].GetType();
-                    collection = this.db.GetCollection<BsonDocument>(type.Name);
-                    if (domainEvents.Length > 1)
-                    {
-                        List<BsonDocument> bsons = new List<BsonDocument>();
-                        List<BsonDocument> resultBsons = new List<BsonDocument>();
-                        foreach (IDomainEvent domainEvent in domainEvents)
-                        {
-                            bsons.Add(domainEvent.ToBsonDocument(type));
-                            resultBsons.Add(this.GetResultBson(domainEvent, EventResult.Stored));
-                        }
-                        collection.InsertMany(bsons);
-                        resultCollection.InsertMany(resultBsons);
-                    }
-                    else
-                    {
-                        collection.InsertOneAsync(domainEvents[0].ToBsonDocument(type));
-                        resultCollection.InsertOne(this.GetResultBson(domainEvents[0], EventResult.Stored));
-                    }
-                }
-                return EventResult.Stored;
+                EventStoreResult result = new EventStoreResult(domainEvent);
+                int index = domainEvent.AggRootType.LastIndexOf(".");
+                string aggRootName = domainEvent.AggRootType.Substring(index);
+                collection = this.db.GetCollection<IDomainEvent>(aggRootName);
+                resultCollection = this.db.GetCollection<EventStoreResult>(aggRootName + "Result");
+                collection.InsertOne(domainEvent);
+                resultCollection.InsertOne(result);
+                return ActionResponse.Succeed<EventResult>(EventResult.Stored);
             }
             catch (MongoWriteException ex)
             {
                 if (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
                 {
-                    return this.GetResult(resultCollection, domainEvents[0]);
+                    return this.GetResult(resultCollection, domainEvent);
                 }
-                throw ex;
+                return ActionResponse.Fail<EventResult>((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
             }
-            return EventResult.Stored;
         }
-        public async Task<EventResult> AddAsync(params IDomainEvent[] domainEvents)
+        public async Task<ActionResponse<EventResult>> AddAsync(IDomainEvent domainEvent)
         {
-            IMongoCollection<BsonDocument> collection = null;
-            IMongoCollection<BsonDocument> resultCollection = null;
+            IMongoCollection<IDomainEvent> collection = null;
+            IMongoCollection<EventStoreResult> resultCollection = null;
             try
             {
-                if (domainEvents != null)
-                {
-                    Type type = domainEvents[0].GetType();
-                    collection = this.db.GetCollection<BsonDocument>(type.Name);
-                    if (domainEvents.Length > 1)
-                    {
-                        List<BsonDocument> bsons = new List<BsonDocument>();
-                        List<BsonDocument> resultBsons = new List<BsonDocument>();
-                        foreach (IDomainEvent domainEvent in domainEvents)
-                        {
-                            bsons.Add(domainEvent.ToBsonDocument(type));
-                            resultBsons.Add(this.GetResultBson(domainEvent, EventResult.Stored));
-                        }
-                        await collection.InsertManyAsync(bsons);
-                        await resultCollection.InsertManyAsync(resultBsons);
-                    }
-                    else
-                    {
-                        await collection.InsertOneAsync(domainEvents[0].ToBsonDocument(type));
-                        await resultCollection.InsertOneAsync(this.GetResultBson(domainEvents[0], EventResult.Stored));
-                    }
-                }
-                return EventResult.Stored;
+                EventStoreResult result = new EventStoreResult(domainEvent);
+                int index = domainEvent.AggRootType.LastIndexOf(".");
+                string aggRootName = domainEvent.AggRootType.Substring(index);
+                collection = this.db.GetCollection<IDomainEvent>(aggRootName);
+                resultCollection = this.db.GetCollection<EventStoreResult>(aggRootName + "Result");
+                await collection.InsertOneAsync(domainEvent);
+                await resultCollection.InsertOneAsync(result);
+                return ActionResponse.Succeed<EventResult>(EventResult.Stored);
             }
             catch (MongoWriteException ex)
             {
                 if (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
                 {
-                    return await this.GetResultAsync(resultCollection, domainEvents[0]);
+                    return await this.GetResultAsync(resultCollection, domainEvent);
                 }
-                throw ex;
+                return ActionResponse.Fail<EventResult>((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
             }
-            return EventResult.Stored;
         }
-        public TEvent Get<TEvent, TAggRootId>(TAggRootId aggRootId, int version) where TEvent : class, IDomainEvent<TAggRootId>
+        public IDomainEvent Get(string aggRootTypeName, string aggRootId, int version)
         {
-            var collection = this.db.GetCollection<TEvent>(typeof(TEvent).Name);
-            return collection.Find<TEvent>(f => f.AggRootId.Equals(aggRootId) && f.Version == version).FirstOrDefault();
+            var collection = this.db.GetCollection<IDomainEvent>(aggRootTypeName);
+            return collection.Find(f => f.AggRootId == aggRootId && f.Version == version).FirstOrDefault();
         }
-        public async Task<TEvent> GetAsync<TEvent, TAggRootId>(TAggRootId aggRootId, int version) where TEvent : class, IDomainEvent<TAggRootId>
+        public async Task<IDomainEvent> GetAsync(string aggRootTypeName, string aggRootId, int version)
         {
-            var collection = this.db.GetCollection<TEvent>(typeof(TEvent).Name);
-            return await collection.Find<TEvent>(f => f.AggRootId.Equals(aggRootId) && f.Version == version).FirstOrDefaultAsync();
+            var collection = this.db.GetCollection<IDomainEvent>(aggRootTypeName);
+            return await collection.Find(f => f.AggRootId == aggRootId && f.Version == version).FirstOrDefaultAsync();
         }
-        public List<TEvent> Find<TEvent, TAggRootId>(TAggRootId aggRootId, int startVersion) where TEvent : class, IDomainEvent<TAggRootId>
+        public List<IDomainEvent> Find(string aggRootTypeName, string aggRootId, int startVersion)
         {
-            var collection = this.db.GetCollection<TEvent>(typeof(TEvent).Name);
-            return collection.Find<TEvent>(f => f.AggRootId.Equals(aggRootId) && f.Version > startVersion).ToList();
+            var collection = this.db.GetCollection<IDomainEvent>(aggRootTypeName);
+            return collection.Find(f => f.AggRootId == aggRootId && f.Version >= startVersion).ToList();
         }
-        public async Task<List<TEvent>> FindAsync<TEvent, TAggRootId>(TAggRootId aggRootId, int startVersion) where TEvent : class, IDomainEvent<TAggRootId>
+        public async Task<List<IDomainEvent>> FindAsync(string aggRootTypeName, string aggRootId, int startVersion)
         {
-            var collection = this.db.GetCollection<TEvent>(typeof(TEvent).Name);
-            return await collection.Find<TEvent>(f => f.AggRootId.Equals(aggRootId) && f.Version > startVersion).ToListAsync();
+            var collection = this.db.GetCollection<IDomainEvent>(aggRootTypeName);
+            return await collection.Find(f => f.AggRootId == aggRootId && f.Version >= startVersion).ToListAsync();
         }
         public void UpdateResult(IDomainEvent domainEvent, EventResult result)
         {
@@ -123,11 +91,11 @@ namespace Basf.MongoStore
                 return;
             }
             Type type = domainEvent.GetType();
-            IMongoCollection<BsonDocument> collection = this.db.GetCollection<BsonDocument>(type.Name + "Result");
-            var builder = Builders<BsonDocument>.Filter;
-            var filter = builder.Eq("UniqueId", domainEvent.AggRootId) & builder.Eq("Version", domainEvent.Version) & builder.Lt("Result", result);
-            var update = Builders<BsonDocument>.Update.Set("Result", result).Set("UpdateAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            collection.UpdateOne(filter, update);
+            var collection = this.db.GetCollection<EventStoreResult>(type.Name + "Result");
+            var update = Builders<EventStoreResult>.Update.Set(f => f.Result, result).
+                Set(f => f.UpdateAt, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            collection.UpdateOne(f => f.AggRootType == domainEvent.AggRootType &&
+                f.AggRootId == domainEvent.AggRootId && f.Version == domainEvent.Version, update);
         }
         public async Task UpdateResultAsync(IDomainEvent domainEvent, EventResult result)
         {
@@ -135,34 +103,24 @@ namespace Basf.MongoStore
             {
                 return;
             }
-            Type type = typeof(IDomainEvent);
-            IMongoCollection<BsonDocument> collection = this.db.GetCollection<BsonDocument>(type.Name + "Result");
-            var builder = Builders<BsonDocument>.Filter;
-            var filter = builder.Eq("UniqueId", domainEvent.AggRootId) & builder.Eq("Version", domainEvent.Version) & builder.Lt("Result", result);
-            var update = Builders<BsonDocument>.Update.Set("Result", result).Set("UpdateAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            await collection.UpdateOneAsync(filter, update);
+            Type type = domainEvent.GetType();
+            var collection = this.db.GetCollection<EventStoreResult>(type.Name + "Result");
+            var update = Builders<EventStoreResult>.Update.Set(f => f.Result, result).
+                Set(f => f.UpdateAt, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            await collection.UpdateOneAsync(f => f.AggRootType == domainEvent.AggRootType &&
+                 f.AggRootId == domainEvent.AggRootId && f.Version == domainEvent.Version, update);
         }
-        private EventResult GetResult(IMongoCollection<BsonDocument> collection, IDomainEvent domainEvent)
+        private ActionResponse<EventResult> GetResult(IMongoCollection<EventStoreResult> collection, IDomainEvent domainEvent)
         {
-            var builder = Builders<BsonDocument>.Filter;
-            var filter = builder.Eq("UniqueId", domainEvent.AggRootId) & builder.Eq("Version", domainEvent.Version);
-            BsonDocument result = collection.Find(filter).FirstOrDefault();
-            return (EventResult)result["ActionResult"].ToInt32();
+            EventStoreResult result = collection.Find(f => f.AggRootType == domainEvent.AggRootType &&
+               f.AggRootId == domainEvent.AggRootId && f.Version == domainEvent.Version).FirstOrDefault();
+            return ActionResponse.Succeed<EventResult>(result.Result);
         }
-        private async Task<EventResult> GetResultAsync(IMongoCollection<BsonDocument> collection, IDomainEvent domainEvent)
+        private async Task<ActionResponse<EventResult>> GetResultAsync(IMongoCollection<EventStoreResult> collection, IDomainEvent domainEvent)
         {
-            var builder = Builders<BsonDocument>.Filter;
-            var filter = builder.Eq("UniqueId", domainEvent.AggRootId) & builder.Eq("Version", domainEvent.Version);
-            BsonDocument result = await collection.Find(filter).FirstOrDefaultAsync();
-            return (EventResult)result["Result"].ToInt32();
-        }
-        private BsonDocument GetResultBson(IDomainEvent domainEvent, EventResult result)
-        {
-            return new BsonDocument
-            {
-                {"AggRootId",domainEvent.AggRootId},{"Version",domainEvent.Version},{"Result",result},
-                {"CreateAt",DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")},{"UpdateAt",DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}
-            };
+            EventStoreResult result = await collection.Find(f => f.AggRootType == domainEvent.AggRootType &&
+               f.AggRootId == domainEvent.AggRootId && f.Version == domainEvent.Version).FirstOrDefaultAsync();
+            return ActionResponse.Succeed<EventResult>(result.Result);
         }
     }
 }

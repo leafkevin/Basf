@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Basf.Data;
+using System;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
@@ -7,31 +8,42 @@ namespace Basf.Domain
 {
     public class HandlerFactory
     {
-        public static Action<THandler, TMessage> CreateActionHandler<THandler, TMessage>(string methodName, BindingFlags bindingFlags, Type messageType, Type handlerType)
+        public static Action<TOwner, TArgs> CreateActionHandler<TOwner, TArgs>(string methodName, BindingFlags bindingFlags, Type ownerType, Type argsType)
         {
-            MethodInfo methodInfo = handlerType.GetMethod(methodName, bindingFlags, Type.DefaultBinder, new Type[] { typeof(TMessage) }, null);
-            var dm = new DynamicMethod(messageType.Name + "Execute", typeof(void), new Type[] { typeof(TMessage), typeof(THandler) }, true);
+            MethodInfo methodInfo = ownerType.GetMethod(methodName, bindingFlags, Type.DefaultBinder, new Type[] { typeof(TArgs) }, null);
+            var dm = new DynamicMethod(argsType.Name + "Execute", typeof(void), new Type[] { typeof(TOwner), typeof(TArgs) }, true);
             ILGenerator il = dm.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Castclass, handlerType);
+            il.Emit(OpCodes.Castclass, ownerType);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Castclass, messageType);
+            il.Emit(OpCodes.Castclass, argsType);
             il.EmitCall(OpCodes.Call, methodInfo, null);
             il.Emit(OpCodes.Ret);
-            return dm.CreateDelegate(typeof(Action<THandler, TMessage>)) as Action<THandler, TMessage>;
+            return dm.CreateDelegate(typeof(Action<TOwner, TArgs>)) as Action<TOwner, TArgs>;
         }
-        public static Func<THandler, TMessage, Task> CreateFuncHandler<THandler, TMessage>(string methodName, BindingFlags bindingFlags, Type messageType, Type handlerType)
+        public static Func<TOwner, TArgs, TResult> CreateFuncHandler<TOwner, TArgs, TResult>(string methodName, BindingFlags bindingFlags, Type ownerType, Type argsType)
         {
-            MethodInfo methodInfo = handlerType.GetMethod(methodName, bindingFlags, Type.DefaultBinder, new Type[] { typeof(TMessage) }, null);
-            var dm = new DynamicMethod(messageType.Name + "Execute", typeof(void), new Type[] { typeof(TMessage), typeof(THandler) }, true);
+            MethodInfo methodInfo = ownerType.GetMethod(methodName, bindingFlags, Type.DefaultBinder, new Type[] { typeof(TArgs) }, null);
+            var dm = new DynamicMethod(argsType.Name + "Execute", typeof(TResult), new Type[] { typeof(TOwner), typeof(TArgs) }, true);
             ILGenerator il = dm.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Castclass, handlerType);
+            il.Emit(OpCodes.Castclass, ownerType);
             il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Castclass, messageType);
+            il.Emit(OpCodes.Castclass, argsType);
             il.EmitCall(OpCodes.Call, methodInfo, null);
             il.Emit(OpCodes.Ret);
-            return dm.CreateDelegate(typeof(Func<THandler, TMessage, Task>)) as Func<THandler, TMessage, Task>;
+            return dm.CreateDelegate(typeof(Func<TOwner, TArgs, TResult>)) as Func<TOwner, TArgs, TResult>;
+        }
+        public static Func<object, TResult> CreateFuncHandler<TResult>(string methodName, BindingFlags bindingFlags,Type ownerType)
+        {
+            MethodInfo methodInfo = ownerType.GetMethod(methodName, bindingFlags, Type.DefaultBinder, new Type[] { typeof(void) }, null);
+            var dm = new DynamicMethod(methodName + "Execute", typeof(TResult), new Type[] { typeof(object) }, true);
+            ILGenerator il = dm.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Castclass, ownerType);
+            il.EmitCall(OpCodes.Call, methodInfo, null);
+            il.Emit(OpCodes.Ret);
+            return dm.CreateDelegate(typeof(Func<object, TResult>)) as Func<object, TResult>;
         }
     }
 }

@@ -1,8 +1,10 @@
-﻿using Basf.Message;
+﻿using System;
 
 namespace Basf.Domain.Command
 {
-    public interface ICommand : IMessage
+    public interface ICommand
     {
+        string UniqueId { get; }
+        DateTime Timestamp { get; }
     }
 }

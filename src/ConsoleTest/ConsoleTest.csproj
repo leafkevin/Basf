@@ -54,9 +54,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\Event\BankAccountAmountLocked.cs" />
     <Compile Include="Domain\Event\OrderCommodityAdded.cs" />
     <Compile Include="Domain\Event\UserLocked.cs" />
     <Compile Include="Domain\Event\UserNameChanged.cs" />
+    <Compile Include="Domain\Model\BankAccount.cs" />
     <Compile Include="Domain\Model\Order.cs" />
     <Compile Include="Domain\Model\User.cs" />
     <Compile Include="Domain\ValueObject\Consignee.cs" />

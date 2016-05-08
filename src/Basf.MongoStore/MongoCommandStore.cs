@@ -5,7 +5,8 @@ using MongoDB.Driver;
 using System.Collections.Concurrent;
 using Basf.Domain.Storage;
 using System.Collections.Generic;
-using MongoDB.Bson;
+using Basf.Data;
+using System.Linq;
 
 namespace Basf.MongoStore
 {
@@ -18,93 +19,76 @@ namespace Basf.MongoStore
             MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore"));
             this.db = client.GetDatabase("CommandStore");
         }
-        public CommandResult Add(params ICommand[] commands)
+        public ActionResponse<CommandResult> Add(ICommand command)
         {
-            IMongoCollection<BsonDocument> collection = null;
-            IMongoCollection<BsonDocument> resultCollection = null;
+            IMongoCollection<ICommand> collection = null;
+            IMongoCollection<CommandStoreResult> resultCollection = null;
             try
             {
-                if (commands != null)
-                {
-                    Type type = commands[0].GetType();
-                    collection = this.db.GetCollection<BsonDocument>(type.Name);
-                    if (commands.Length > 1)
-                    {
-                        List<BsonDocument> bsons = new List<BsonDocument>();
-                        List<BsonDocument> resultBsons = new List<BsonDocument>();
-                        foreach (ICommand command in commands)
-                        {
-                            bsons.Add(command.ToBsonDocument(type));
-                            resultBsons.Add(this.GetResultBson(command, CommandResult.Stored));
-                        }
-                        collection.InsertMany(bsons);
-                        resultCollection.InsertMany(resultBsons);
-                    }
-                    else
-                    {
-                        collection.InsertOne(commands[0].ToBsonDocument(type));
-                        resultCollection.InsertOne(this.GetResultBson(commands[0], CommandResult.Stored));
-                    }
-                }
-                return CommandResult.Stored;
+                Type type = command.GetType();
+                CommandStoreResult result = new CommandStoreResult(command);
+                collection = this.db.GetCollection<ICommand>(type.Name);
+                resultCollection = this.db.GetCollection<CommandStoreResult>(type.Name + "Result");
+                collection.InsertOne(command);
+                resultCollection.InsertOne(result);
+                return ActionResponse.Succeed<CommandResult>(CommandResult.Stored);
             }
             catch (MongoWriteException ex)
             {
                 if (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
                 {
-                    return this.GetResult(resultCollection, commands[0]);
+                    return this.GetResult(resultCollection, command);
                 }
+                return ActionResponse.Fail<CommandResult>((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
             }
-            return CommandResult.Stored;
         }
-        public async Task<CommandResult> AddAsync(params ICommand[] commands)
+        public async Task<ActionResponse<CommandResult>> AddAsync(ICommand command)
         {
-            IMongoCollection<BsonDocument> collection = null;
-            IMongoCollection<BsonDocument> resultCollection = null;
+            IMongoCollection<ICommand> collection = null;
+            IMongoCollection<CommandStoreResult> resultCollection = null;
             try
             {
-                if (commands != null)
-                {
-                    Type type = commands[0].GetType();
-                    collection = this.db.GetCollection<BsonDocument>(type.Name);
-                    if (commands.Length > 1)
-                    {
-                        List<BsonDocument> bsons = new List<BsonDocument>();
-                        List<BsonDocument> resultBsons = new List<BsonDocument>();
-                        foreach (ICommand command in commands)
-                        {
-                            bsons.Add(command.ToBsonDocument(type));
-                            resultBsons.Add(this.GetResultBson(command, CommandResult.Stored));
-                        }
-                        await collection.InsertManyAsync(bsons);
-                        await resultCollection.InsertManyAsync(resultBsons);
-                    }
-                    else
-                    {
-                        await collection.InsertOneAsync(commands[0].ToBsonDocument(type));
-                        await resultCollection.InsertOneAsync(this.GetResultBson(commands[0], CommandResult.Stored));
-                    }
-                }
-                return CommandResult.Stored;
+                Type type = command.GetType();
+                CommandStoreResult result = new CommandStoreResult(command);
+                collection = this.db.GetCollection<ICommand>(type.Name);
+                resultCollection = this.db.GetCollection<CommandStoreResult>(type.Name + "Result");
+                await collection.InsertOneAsync(command);
+                await resultCollection.InsertOneAsync(result);
+                return ActionResponse.Succeed<CommandResult>(CommandResult.Stored);
             }
             catch (MongoWriteException ex)
             {
                 if (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
                 {
-                    return await this.GetResultAsync(resultCollection, commands[0]);
+                    return await this.GetResultAsync(resultCollection, command);
                 }
+                return ActionResponse.Fail<CommandResult>((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
             }
-            return CommandResult.Stored;
         }
-        public TCommand Get<TCommand>(string commandId) where TCommand : class, ICommand
+        public ICommand Get(string commandTypeName, string commandId)
         {
-            var collection = this.db.GetCollection<TCommand>(typeof(TCommand).Name);
-            return collection.Find<TCommand>(f => f.UniqueId == commandId).FirstOrDefault();
+            var collection = this.db.GetCollection<ICommand>(commandTypeName);
+            return collection.Find(f => f.UniqueId == commandId).FirstOrDefault();
         }
-        public Task<TCommand> GetAsync<TCommand>(string commandId) where TCommand : class, ICommand
+        public async Task<ICommand> GetAsync(string commandTypeName, string commandId)
         {
-            var collection = this.db.GetCollection<TCommand>(typeof(TCommand).Name);
-            return collection.Find<TCommand>(f => f.UniqueId == commandId).FirstOrDefaultAsync();
+            var collection = this.db.GetCollection<ICommand>(commandTypeName);
+            return await collection.Find(f => f.UniqueId == commandId).FirstOrDefaultAsync();
+        }       
+        public List<ICommand> Find(string commandTypeName, CommandResult result)
+        {
+            var resultCollection = this.db.GetCollection<CommandStoreResult>(commandTypeName + "Result");
+            var resultList = resultCollection.Find(f => f.Result == result).ToList().Select(f => f.CommandId).ToList();
+            var collection = this.db.GetCollection<ICommand>(commandTypeName);
+            return collection.Find(f => resultList.Contains(f.UniqueId)).ToList();
+        }
+        public async Task<List<ICommand>> FindAsync(string commandTypeName, CommandResult result)
+        {
+            var resultCollection = this.db.GetCollection<CommandStoreResult>(commandTypeName + "Result");
+            var list = await resultCollection.Find(f => f.Result == result).ToListAsync();
+            var resultList = list.Select(f => f.CommandId).ToList();
+            var collection = this.db.GetCollection<ICommand>(commandTypeName);
+            return await collection.Find(f => resultList.Contains(f.UniqueId)).ToListAsync();
         }
         public void UpdateResult(ICommand command, CommandResult result)
         {
@@ -113,10 +97,10 @@ namespace Basf.MongoStore
                 return;
             }
             Type type = command.GetType();
-            IMongoCollection<BsonDocument> collection = this.db.GetCollection<BsonDocument>(type.Name + "Result");
-            var filter = Builders<BsonDocument>.Filter.Eq("UniqueId", command.UniqueId);
-            var update = Builders<BsonDocument>.Update.Set("Result", result).Set("UpdateAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            collection.UpdateOne(filter, update);
+            var collection = this.db.GetCollection<CommandStoreResult>(type.Name + "Result");
+            var update = Builders<CommandStoreResult>.Update.Set(f => f.Result, result).
+                Set(f => f.UpdateAt, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            collection.UpdateOne(f => f.CommandId == command.UniqueId, update);
         }
         public async Task UpdateResultAsync(ICommand command, CommandResult result)
         {
@@ -125,42 +109,20 @@ namespace Basf.MongoStore
                 return;
             }
             Type type = command.GetType();
-            IMongoCollection<BsonDocument> collection = this.db.GetCollection<BsonDocument>(type.Name + "Result");
-            var filter = Builders<BsonDocument>.Filter.Eq("UniqueId", command.UniqueId);
-            var update = Builders<BsonDocument>.Update.Set("Result", result).Set("UpdateAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            await collection.UpdateOneAsync(filter, update);
+            var collection = this.db.GetCollection<CommandStoreResult>(type.Name + "Result");
+            var update = Builders<CommandStoreResult>.Update.Set(f => f.Result, result).
+                Set(f => f.UpdateAt, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            await collection.UpdateOneAsync(f => f.CommandId == command.UniqueId, update);
         }
-        public List<TCommand> Find<TCommand>(CommandResult result) where TCommand : class, ICommand
+        private ActionResponse<CommandResult> GetResult(IMongoCollection<CommandStoreResult> collection, ICommand command)
         {
-            //var collection = this.db.GetCollection<TCommand>(typeof(TCommand).Name);
-            //return collection.Find<TCommand>(f => f.UniqueId.Equals(aggRootId) && f.Version > startVersion).ToList();
-            return null;
+            var result = collection.Find(f => f.CommandId == command.UniqueId).FirstOrDefault();
+            return ActionResponse.Succeed<CommandResult>(result.Result);
         }
-        public async Task<List<TCommand>> FindAsync<TCommand>(CommandResult result) where TCommand : class, ICommand
+        private async Task<ActionResponse<CommandResult>> GetResultAsync(IMongoCollection<CommandStoreResult> collection, ICommand command)
         {
-            //var collection = this.db.GetCollection<TEvent>(typeof(TEvent).Name);
-            //return await collection.Find<TEvent>(f => f.AggRootId.Equals(aggRootId) && f.Version > startVersion).ToListAsync();
-            return null;
-        }
-        private CommandResult GetResult(IMongoCollection<BsonDocument> collection, ICommand command)
-        {
-            var filter = Builders<BsonDocument>.Filter.Eq("UniqueId", command.UniqueId);
-            BsonDocument result = collection.Find(filter).FirstOrDefault();
-            return (CommandResult)result["ActionResult"].ToInt32();
-        }
-        private async Task<CommandResult> GetResultAsync(IMongoCollection<BsonDocument> collection, ICommand command)
-        {
-            var filter = Builders<BsonDocument>.Filter.Eq("UniqueId", command.UniqueId);
-            BsonDocument result = await collection.Find(filter).FirstOrDefaultAsync();
-            return (CommandResult)result["Result"].ToInt32();
-        }
-        private BsonDocument GetResultBson(ICommand command, CommandResult result)
-        {
-            return new BsonDocument
-            {
-                {"CommandId",command.UniqueId},{"Result",result},
-                {"CreateAt",DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")},{"UpdateAt",DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}
-            };
+            var result = await collection.Find(f => f.CommandId == command.UniqueId).FirstOrDefaultAsync();
+            return ActionResponse.Succeed<CommandResult>(result.Result);
         }
     }
 }
