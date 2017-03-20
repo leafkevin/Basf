@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Basf
 {
-    public interface IObjectContainer
+    public interface IObjectContainer : IDisposable
     {
         #region ServiceRegistry组件注册
         void Register(Action<IAbsfRegistration> objRegisterBuilder);

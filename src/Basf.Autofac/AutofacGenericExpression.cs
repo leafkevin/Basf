@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Builder;
+using Autofac.Extras.DynamicProxy;
 using System;
 using System.Collections.Generic;
 
@@ -123,6 +124,11 @@ namespace Basf.Autofac
                 }
             }
             this.objRegistrationBuilder.WithParameters(objParameterList);
+            return this;
+        }
+        public IAbsfRegistrationGenericExpression WithInterfaceInterceptor(Type interceptorType)
+        {
+            this.objRegistrationBuilder.EnableInterfaceInterceptors().InterceptedBy(interceptorType);
             return this;
         }
         public void Update(IContainer objContainer)

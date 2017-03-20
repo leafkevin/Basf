@@ -11,7 +11,7 @@ namespace Basf
         IAbsfRegistrationInstanceExpression<TService> RegisterType<TService>(TService objInstance) where TService : class;
         IAbsfRegistrationTypeExpression<TComponent> RegisterType<TService, TComponent>()
             where TService : class
-            where TComponent : class, TService;       
+            where TComponent : class, TService;
         IAbsfRegistrationGenericExpression RegisterGeneric(Type objService, Type objComponent);
     }
     public interface IAbsfRegistrationTypeExpression
@@ -29,6 +29,8 @@ namespace Basf
         IAbsfRegistrationTypeExpression WithParameter(string strName, object objValue);
         IAbsfRegistrationTypeExpression WithParameters(params object[] objParamters);
         IAbsfRegistrationTypeExpression WithParameters(IDictionary<string, object> objParamters);
+        IAbsfRegistrationTypeExpression WithInterfaceInterceptor(Type interceptorType);
+        IAbsfRegistrationTypeExpression WithClassInterceptor(Type interceptorType);
     }
     public interface IAbsfRegistrationTypeExpression<TComponent>
     {
@@ -45,6 +47,8 @@ namespace Basf
         IAbsfRegistrationTypeExpression<TComponent> WithParameter(string strName, object objValue);
         IAbsfRegistrationTypeExpression<TComponent> WithParameters(params object[] objParamters);
         IAbsfRegistrationTypeExpression<TComponent> WithParameters(IDictionary<string, object> objParamters);
+        IAbsfRegistrationTypeExpression<TComponent> WithInterfaceInterceptor(Type interceptorType);
+        IAbsfRegistrationTypeExpression<TComponent> WithClassInterceptor(Type interceptorType);
     }
     public interface IAbsfRegistrationInstanceExpression<TComponent>
     {
@@ -57,6 +61,7 @@ namespace Basf
         IAbsfRegistrationInstanceExpression<TComponent> Lifetime(LifetimeStyle iLifetimeStyle);
         IAbsfRegistrationInstanceExpression<TComponent> OwnedLifetime(Type objServiceType);
         IAbsfRegistrationInstanceExpression<TComponent> OwnedLifetime<TService>();
+        IAbsfRegistrationInstanceExpression<TComponent> WithInterfaceInterceptor(Type interceptorType);
     }
 
     public interface IAbsfRegistrationGenericExpression
@@ -72,5 +77,6 @@ namespace Basf
         IAbsfRegistrationGenericExpression WithParameter(string strName, object objValue);
         IAbsfRegistrationGenericExpression WithParameters(params object[] objParamters);
         IAbsfRegistrationGenericExpression WithParameters(IDictionary<string, object> objParamters);
+        IAbsfRegistrationGenericExpression WithInterfaceInterceptor(Type interceptorType);
     }
 }

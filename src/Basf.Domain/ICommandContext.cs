@@ -6,8 +6,8 @@ namespace Basf.Domain
 {
     public interface ICommandContext
     {
-        void Execute(ICommand command);
-        Task ExecuteAsync(ICommand command);
+        //void Execute(ICommand command);
+        //Task ExecuteAsync(ICommand command);
         void AddHandler(Type handlerType, Type commandType);
     }
 }

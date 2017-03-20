@@ -2,6 +2,6 @@
 {
     public enum DomainError
     {
-        EventExecuteAggRootVersionError = 201,
+        EventVersionError = 201,
     }
 }

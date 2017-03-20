@@ -16,7 +16,7 @@ namespace Basf.MongoStore
         private IMongoDatabase db = null;
         public MongoCommandStore()
         {
-            MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore"));
+            MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore", ""));
             this.db = client.GetDatabase("CommandStore");
         }
         public ActionResponse<CommandResult> Add(ICommand command)
@@ -39,7 +39,7 @@ namespace Basf.MongoStore
                 {
                     return this.GetResult(resultCollection, command);
                 }
-                return ActionResponse.Fail<CommandResult>((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
+                return ActionResponse.Fail<CommandResult>(1, ex.ToString());
             }
         }
         public async Task<ActionResponse<CommandResult>> AddAsync(ICommand command)
@@ -62,7 +62,7 @@ namespace Basf.MongoStore
                 {
                     return await this.GetResultAsync(resultCollection, command);
                 }
-                return ActionResponse.Fail<CommandResult>((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
+                return ActionResponse.Fail<CommandResult>(1, ex.ToString());
             }
         }
         public ICommand Get(string commandTypeName, string commandId)
@@ -74,7 +74,7 @@ namespace Basf.MongoStore
         {
             var collection = this.db.GetCollection<ICommand>(commandTypeName);
             return await collection.Find(f => f.UniqueId == commandId).FirstOrDefaultAsync();
-        }       
+        }
         public List<ICommand> Find(string commandTypeName, CommandResult result)
         {
             var resultCollection = this.db.GetCollection<CommandStoreResult>(commandTypeName + "Result");

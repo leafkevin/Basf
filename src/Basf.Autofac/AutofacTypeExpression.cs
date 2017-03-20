@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Builder;
+using Autofac.Extras.DynamicProxy;
 using System;
 using System.Collections.Generic;
 
@@ -125,6 +126,16 @@ namespace Basf.Autofac
             this.objRegistrationBuilder.WithParameters(objParameterList);
             return this;
         }
+        public IAbsfRegistrationTypeExpression WithInterfaceInterceptor(Type interceptorType)
+        {
+            this.objRegistrationBuilder.EnableInterfaceInterceptors().InterceptedBy(interceptorType);
+            return this;
+        }
+        public IAbsfRegistrationTypeExpression WithClassInterceptor(Type interceptorType)
+        {
+            this.objRegistrationBuilder.EnableClassInterceptors().InterceptedBy(interceptorType);
+            return this;
+        }
         public void Update(IContainer objContainer)
         {
             this.objBuilder.Update(objContainer);
@@ -243,6 +254,16 @@ namespace Basf.Autofac
                 }
             }
             this.objRegistrationBuilder.WithParameters(objParameterList);
+            return this;
+        }
+        public IAbsfRegistrationTypeExpression<TComponent> WithInterfaceInterceptor(Type interceptorType)
+        {
+            this.objRegistrationBuilder.EnableInterfaceInterceptors().InterceptedBy(interceptorType);
+            return this;
+        }
+        public IAbsfRegistrationTypeExpression<TComponent> WithClassInterceptor(Type interceptorType)
+        {
+            this.objRegistrationBuilder.EnableClassInterceptors().InterceptedBy(interceptorType);
             return this;
         }
         public void Update(IContainer objContainer)
@@ -365,6 +386,16 @@ namespace Basf.Autofac
                 }
             }
             this.objRegistrationBuilder.WithParameters(objParameterList);
+            return this;
+        }
+        public IAbsfRegistrationTypeExpression<TComponent> WithInterfaceInterceptor(Type interceptorType)
+        {
+            this.objRegistrationBuilder.EnableInterfaceInterceptors().InterceptedBy(interceptorType);
+            return this;
+        }
+        public IAbsfRegistrationTypeExpression<TComponent> WithClassInterceptor(Type interceptorType)
+        {
+            this.objRegistrationBuilder.EnableClassInterceptors().InterceptedBy(interceptorType);
             return this;
         }
         public void Update(IContainer objContainer)

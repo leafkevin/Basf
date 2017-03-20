@@ -1,7 +1,4 @@
-﻿using Basf.Domain.Event;
-using System.Threading.Tasks;
-
-namespace Basf.Domain
+﻿namespace Basf.Domain
 {
     public interface IAggRoot : IEntity
     {

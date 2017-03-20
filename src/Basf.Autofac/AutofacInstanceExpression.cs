@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Builder;
+using Autofac.Extras.DynamicProxy;
 using System;
 using System.Collections.Generic;
 
@@ -84,6 +85,11 @@ namespace Basf.Autofac
         public IAbsfRegistrationInstanceExpression<TComponent> OwnedLifetime<TService>()
         {
             this.objRegistrationBuilder.InstancePerOwned<TService>();
+            return this;
+        }
+        public IAbsfRegistrationInstanceExpression<TComponent> WithInterfaceInterceptor(Type interceptorType)
+        {
+            this.objRegistrationBuilder.EnableInterfaceInterceptors().InterceptedBy(interceptorType);
             return this;
         }
         public void Update(IContainer objContainer)

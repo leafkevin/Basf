@@ -1,5 +1,4 @@
-﻿using Basf.Message;
-using System;
+﻿using System;
 
 namespace Basf.Domain.Event
 {

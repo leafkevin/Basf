@@ -13,7 +13,7 @@ namespace Basf.MongoStore
         private IMongoDatabase db = null;
         public MongoEventStore()
         {
-            MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore"));
+            MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore", ""));
             this.db = client.GetDatabase("EventStore");
         }
         public ActionResponse<EventResult> Add(IDomainEvent domainEvent)
@@ -37,7 +37,7 @@ namespace Basf.MongoStore
                 {
                     return this.GetResult(resultCollection, domainEvent);
                 }
-                return ActionResponse.Fail<EventResult>((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
+                return ActionResponse.Fail<EventResult>(1, ex.ToString());
             }
         }
         public async Task<ActionResponse<EventResult>> AddAsync(IDomainEvent domainEvent)
@@ -61,7 +61,7 @@ namespace Basf.MongoStore
                 {
                     return await this.GetResultAsync(resultCollection, domainEvent);
                 }
-                return ActionResponse.Fail<EventResult>((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
+                return ActionResponse.Fail<EventResult>(1, ex.ToString());
             }
         }
         public IDomainEvent Get(string aggRootTypeName, string aggRootId, int version)

@@ -10,7 +10,7 @@ namespace Basf.MongoStore
         private IMongoDatabase db = null;
         public MongoSnapshotStore()
         {
-            MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore"));
+            MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore",""));
             this.db = client.GetDatabase("SnapshotStore");
         }
         public void Create(IAggRoot aggRoot)

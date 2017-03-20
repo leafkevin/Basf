@@ -9,7 +9,7 @@ namespace Basf.LogMongo
         private IMongoCollection<Logger> collection = null;
         public MongoLogger()
         {
-            MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore"));
+            MongoClient client = new MongoClient(Utility.GetAppSettingValue("MongoStore",""));
             IMongoDatabase db = client.GetDatabase("LoggerStore");
             this.collection = db.GetCollection<Logger>("Logger");
         }

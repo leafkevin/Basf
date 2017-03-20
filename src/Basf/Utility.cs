@@ -29,20 +29,6 @@ namespace Basf
             return connSetting.ConnectionString;
             #endregion
         }
-        /// <summary>
-        /// 获取Web.config文件中appSettings中的数据。
-        /// </summary>
-        /// <param name="strKey">Key值</param>
-        /// <returns>返回Value值</returns>
-        public static string GetAppSettingValue(string strKey)
-        {
-            string strValue = ConfigurationManager.AppSettings[strKey] as string;
-            if (String.IsNullOrEmpty(strValue))
-            {
-                return String.Empty;
-            }
-            return strValue;
-        }
         public static string GetAppSettingValue(string strKey, string strDefault)
         {
             string strValue = ConfigurationManager.AppSettings[strKey] as string;

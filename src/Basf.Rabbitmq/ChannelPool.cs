@@ -5,7 +5,7 @@ namespace Basf.Rabbitmq
     public class ChannelPool
     {
         private static ConnectionFactory objConnFactory = null;
-        private static string ConnectionUri = Utility.GetAppSettingValue("RabbitUri");
+        private static string ConnectionUri = Utility.GetAppSettingValue("RabbitUri","");
         //private BlockingCollection<Channel> objWorkerList = null;
         //private BlockingCollection<Channel> objRetryWorkerList = null;
 

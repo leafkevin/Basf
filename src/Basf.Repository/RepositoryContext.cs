@@ -1,6 +1,4 @@
-﻿ using Basf.Domain;
-using Basf.Domain.Repository;
-using System.Data;
+﻿using System.Data;
 
 namespace Basf.Repository
 {
@@ -8,12 +6,16 @@ namespace Basf.Repository
     {
         protected IDbConnection Connection { get; set; }
         protected IDbTransaction Transaction { get; set; }
-        public RepositoryContext(IDbConnection connection)
+        public string ConnString { get; set; }
+        public RepositoryContext(string connString)
         {
-            this.Connection = connection;
+            this.ConnString = connString;
+            var provider = OrmProviderFactory.GetProvider(this.ConnString);
+            this.Connection = provider.CreateConnection(this.ConnString);
         }
         public void Begin()
         {
+            this.Open();
             this.Transaction = this.Connection.BeginTransaction();
         }
         public void Commit()
@@ -23,24 +25,13 @@ namespace Basf.Repository
                 this.Transaction.Commit();
             }
         }
-        /// <summary>
-        /// 如果使用UnitOfWork的话，必须用此方法来获取实体的Repository
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <returns></returns>
+        public IRepository RepositoryFor()
+        {
+            return AppRuntime.Resolve<IRepository>(this.ConnString, this.Transaction);
+        }
         public IRepository<TEntity> RepositoryFor<TEntity>() where TEntity : class
         {
-            return AppRuntime.Resolve<IRepository<TEntity>>(this.Connection, this.Transaction);
-        }
-        /// <summary>
-        /// 如果使用UnitOfWork的话，必须用此方法来获取聚合根的Repository
-        /// </summary>
-        /// <typeparam name="TAggRoot"></typeparam>
-        /// <typeparam name="TAggRootId"></typeparam>
-        /// <returns></returns>
-        public IRepository<TAggRoot, TAggRootId> RepositoryFor<TAggRoot, TAggRootId>() where TAggRoot : class, IAggRoot<TAggRootId>
-        {
-            return AppRuntime.Resolve<IRepository<TAggRoot, TAggRootId>>(this.Connection, this.Transaction);
+            return AppRuntime.Resolve<IRepository<TEntity>>(this.ConnString, this.Transaction);
         }
         public void Rollback()
         {
@@ -59,6 +50,21 @@ namespace Basf.Repository
             {
                 this.Connection.Dispose();
             }
+        }
+        private void Open()
+        {
+            if (this.Connection.State == ConnectionState.Broken)
+            {
+                this.Connection.Close();
+            }
+            if (this.Connection.State == ConnectionState.Closed)
+            {
+                this.Connection.Open();
+            }
+        }
+        public void Close()
+        {
+            this.Connection.Close();
         }
     }
 }

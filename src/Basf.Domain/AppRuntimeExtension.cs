@@ -10,8 +10,8 @@ namespace Basf.Domain
     {
         public static AppRuntime UsingDomain(this AppRuntime objAppRuntime, params Assembly[] assemblies)
         {
-            AppRuntime.RegisterType<ICommandContext, CommandContext>(LifetimeStyle.Singleton);
-            AppRuntime.RegisterType<IDomainContext, DomainContext>(LifetimeStyle.Singleton);
+            //AppRuntime.RegisterType<ICommandContext, CommandContext>(LifetimeStyle.Singleton);
+            //AppRuntime.RegisterType<IDomainContext, DomainContext>(LifetimeStyle.Singleton);
             RegisterHandlers(assemblies);
             return AppRuntime.Instance;
         }

@@ -31,7 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -44,12 +49,14 @@
     <Compile Include="Attributes\TableAttribute.cs" />
     <Compile Include="Attributes\IgnoreAttribute.cs" />
     <Compile Include="AppRuntimeExtension.cs" />
-    <Compile Include="DefaultOrmProvider.cs" />
     <Compile Include="DapperExtension.cs" />
-    <Compile Include="Attributes\ComputeAttribute.cs" />
-    <Compile Include="DapperAsync.cs" />
-    <Compile Include="Dapper.cs" />
+    <Compile Include="Repository.cs" />
+    <Compile Include="RepositoryContext.cs" />
+    <Compile Include="DapperConnection.cs" />
+    <Compile Include="DefaultOrmProvider.cs" />
     <Compile Include="IOrmProvider.cs" />
+    <Compile Include="MyDapper.cs" />
+    <Compile Include="OrmFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -57,6 +64,9 @@
       <Project>{4e0b63ea-091c-4bf8-9b28-3ab1ff7e4659}</Project>
       <Name>Basf</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

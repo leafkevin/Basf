@@ -1,18 +1,16 @@
-﻿using Basf.Orm;
-using System.Data;
-using Basf.Domain.Repository;
-
-namespace Basf.Repository
+﻿namespace Basf.Repository
 {
     public static class AppRuntimeExtension
     {
-        public static AppRuntime UsingDapperRepository<TConnection, TOrmProvider>(this AppRuntime objAppRuntime, string connKey)
-            where TConnection : class, IDbConnection
-            where TOrmProvider : class, IOrmProvider
+        public static AppRuntime UsingRepository<TOrmProvider>(this AppRuntime objAppRuntime, string connString, bool isDefault = true)
+            where TOrmProvider : IOrmProvider, new()
         {
-            objAppRuntime.UsingOrmDapper<TConnection, TOrmProvider>(connKey);
-            AppRuntime.RegisterGeneric(typeof(IRepository<>), typeof(Repository<>), LifetimeStyle.Thread);
-            AppRuntime.RegisterType<IRepositoryContext, RepositoryContext>(LifetimeStyle.Thread);
+            OrmProviderFactory.RegisterProvider(connString, new TOrmProvider(), isDefault);
+          
+            AppRuntime.Register(f => f.RegisterGeneric(typeof(IRepository<>), typeof(Repository<>))
+                .Lifetime(LifetimeStyle.Thread).WithParameter("connString", connString));
+            AppRuntime.Register(f => f.RegisterType<IRepositoryContext, RepositoryContext>()
+                .Lifetime(LifetimeStyle.Thread).WithParameter("connString", connString));
             return AppRuntime.Instance;
         }
     }

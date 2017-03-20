@@ -41,15 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\ActionResultCode.cs" />
-    <Compile Include="IPromise.cs" />
     <Compile Include="Container\AbsfContainerExtensions.cs" />
     <Compile Include="AppRuntime.cs" />
-    <Compile Include="Data\ActionResult.cs" />
-    <Compile Include="Message\IConsumer.cs" />
-    <Compile Include="Message\IProducer.cs" />
-    <Compile Include="Message\Message.cs" />
-    <Compile Include="Message\IMessage.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="Data\ActionResponse.cs" />
     <Compile Include="Container\IAbsfRegistration.cs" />
@@ -57,7 +50,18 @@
     <Compile Include="Container\IAbsfContainer.cs" />
     <Compile Include="Logging\EmptyLogger.cs" />
     <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Messages\IConsumer.cs" />
+    <Compile Include="Messages\IMessage.cs" />
+    <Compile Include="Messages\IProducer.cs" />
+    <Compile Include="Messages\Message.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repository\IRepositoryTEntity.cs" />
+    <Compile Include="Repository\IOrmProvider.cs" />
+    <Compile Include="Repository\IRepository.cs" />
+    <Compile Include="Repository\IRepositoryContext.cs" />
+    <Compile Include="Domain\IUnitOfWork.cs" />
+    <Compile Include="Repository\PagedList.cs" />
+    <Compile Include="Repository\SqlBuilder.cs" />
     <Compile Include="Serializing\IBinarySerializer.cs" />
     <Compile Include="Serializing\IJsonSerializer.cs" />
     <Compile Include="Serializing\ISerializer.cs" />

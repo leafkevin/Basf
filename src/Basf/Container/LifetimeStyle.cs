@@ -1,5 +1,4 @@
-﻿
-namespace Basf
+﻿namespace Basf
 {
     public enum LifetimeStyle
     {

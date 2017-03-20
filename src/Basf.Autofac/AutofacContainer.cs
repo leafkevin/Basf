@@ -11,10 +11,6 @@ namespace Basf.Autofac
         {
             objContainer = new ContainerBuilder().Build();
         }
-        public AutofacContainer(ContainerBuilder objContainerBuilder)
-        {
-            objContainer = objContainerBuilder.Build();
-        }
         public IContainer Container
         {
             get
@@ -126,6 +122,13 @@ namespace Basf.Autofac
                 objParameter.Add(new PositionalParameter(i, objArgs[i]));
             }
             return objParameter;
+        }
+        public void Dispose()
+        {
+            if (this.objContainer != null)
+            {
+                this.objContainer.Dispose();
+            }
         }
     }
 }

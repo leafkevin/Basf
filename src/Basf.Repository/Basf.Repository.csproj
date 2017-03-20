@@ -7,8 +7,8 @@
     <ProjectGuid>{A1065495-466E-4BE7-8980-E6669D156ADC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Basf.DapperRepository</RootNamespace>
-    <AssemblyName>Basf.DapperRepository</AssemblyName>
+    <RootNamespace>Basf.Repository</RootNamespace>
+    <AssemblyName>Basf.Repository</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -42,7 +46,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppRuntimeExtension.cs" />
+    <Compile Include="Attributes\ColumnAttribute.cs" />
+    <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
+    <Compile Include="Attributes\IgnoreAttribute.cs" />
+    <Compile Include="Attributes\TableAttribute.cs" />
+    <Compile Include="Providers\OracleProvider.cs" />
+    <Compile Include="Providers\PostgreSqlProvider.cs" />
+    <Compile Include="Providers\MySqlProvider.cs" />
+    <Compile Include="Providers\SqlLiteProvider.cs" />
     <Compile Include="Repository.cs" />
+    <Compile Include="RepositoryHelper.cs" />
+    <Compile Include="RepositoryPrivate.cs" />
+    <Compile Include="DbTypeMap.cs" />
+    <Compile Include="OrmProviderFactory.cs" />
+    <Compile Include="MemberMapper.cs" />
+    <Compile Include="EntityMapper.cs" />
+    <Compile Include="TypeExtensions.cs" />
+    <Compile Include="Providers\SqlServerProvider.cs" />
+    <Compile Include="RepositoryTEntity.cs" />
     <Compile Include="RepositoryContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -51,14 +72,13 @@
       <Project>{9687db78-b1a1-4528-831d-f3b39fae8cc3}</Project>
       <Name>Basf.Domain</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Basf.Orm\Basf.Orm.csproj">
-      <Project>{54656de3-e6e3-4552-9484-38745d5d87bd}</Project>
-      <Name>Basf.Orm</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Basf\Basf.csproj">
       <Project>{4e0b63ea-091c-4bf8-9b28-3ab1ff7e4659}</Project>
       <Name>Basf</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

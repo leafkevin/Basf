@@ -1,7 +1,7 @@
 ﻿using Basf.Data;
 using Basf.Domain.Event;
 using Basf.Domain.Storage;
-using Basf.Message;
+using Basf.Messages;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -50,31 +50,36 @@ namespace Basf.Domain
                 //先将事件的版本+1
                 domainEvent.Version = aggRoot.Version + 1;
                 ActionResponse<EventResult> result = await this.eventStore.AddAsync(domainEvent);
-                if (result.Result == ActionResult.Failed)
-                {
-                    //TODO 先记录日志，再抛出异常
-                    await this.eventStore.UpdateResultAsync(domainEvent, EventResult.Error);
-                    AppRuntime.ErrorFormat("事件:{0}存储异常,异常消息:{1}，异常明细:{2}", result.Message, result.Detail);
-                    return;
-                }
+                //if (result.Success == ActionResult.Failed)
+                //{
+                //    //TODO 先记录日志，再抛出异常
+                //    await this.eventStore.UpdateResultAsync(domainEvent, EventResult.Error);
+                //    AppRuntime.ErrorFormat("领域事件{0}存储异常,异常消息:{1}，异常明细:{2}", domainEvent.ToString(), result.Message, result.Detail);
+                //    return;
+                //}
                 //事件已经执行过，则返回
-                if (result.ReturnData >= EventResult.Executed)
+                if (result.Data >= EventResult.Executed)
                 {
                     return;
                 }
                 //先验证事件版本的顺序，通过后，在事件的处理方法中，将聚合根的版本更新为事件的版本(+1后的版本)
                 var tResult = await this.acceptChange(aggRoot, domainEvent);
-                if (tResult.Result == ActionResult.Success)
-                {
-                    await this.eventStore.UpdateResultAsync(domainEvent, EventResult.Executed);
-                    this.consumer.Ack(ackKey);
-                }
-                else
-                {
-                    await this.eventStore.UpdateResultAsync(domainEvent, EventResult.Error);
-                    AppRuntime.ErrorFormat("事件:{0}存储异常,异常消息:{1}，异常明细:{2}", result.Message, result.Detail);
-                }
+                //if (tResult.Success == ActionResult.Success)
+                //{
+                //    await this.eventStore.UpdateResultAsync(domainEvent, EventResult.Executed);
+                //    this.consumer.Ack(ackKey);
+                //}
+                //else
+                //{
+                //    await this.eventStore.UpdateResultAsync(domainEvent, EventResult.Error);
+                //    AppRuntime.ErrorFormat("领域事件{0}存储异常,异常消息:{1}，异常明细:{2}", result.Message, result.Detail);
+                //}
             });
+        }
+        public void Ack(IMessage msg)
+        {
+            //Message<IDomainEvent> eventMsg = msg as Message<IDomainEvent>;
+            //this.consumer.Ack(eventMsg.AckKey);
         }
         public IAggRoot Get(AggRootKey aggRootKey)
         {
@@ -95,15 +100,15 @@ namespace Basf.Domain
                 this.aggRoots.TryAdd(aggRoot.ToAggRootKey(), aggRoot);
             });
         }
-        public async Task<ActionResponse> ApplyChange(IDomainEvent domainEvent)
+        public async Task<ActionResponse> ApplyChange(Message<IDomainEvent> domainEvent)
         {
-            AggRootKey changeKey = domainEvent.ToAggRootKey();
-            int routingKey = changeKey.GetHashCode() % this.MailBoxPartition;
-            this.aggRootChanges[routingKey].Add(domainEvent);
-            if (!this.aggRoots.ContainsKey(domainEvent.ToAggRootKey()))
-            {
-                await this.AddAggRoot(domainEvent);
-            }
+            //AggRootKey changeKey = domainEvent.ToAggRootKey();
+            //int routingKey = changeKey.GetHashCode() % this.MailBoxPartition;
+            //this.aggRootChanges[routingKey].Add(domainEvent);
+            //if (!this.aggRoots.ContainsKey(domainEvent.ToAggRootKey()))
+            //{
+            //    await this.AddAggRoot(domainEvent);
+            //}
             return ActionResponse.Success;
         }
         public ActionResponse Publish(IDomainEvent domainEvent)
@@ -111,8 +116,8 @@ namespace Basf.Domain
             try
             {
                 var msg = new Message<IDomainEvent>(domainEvent);
-                msg.RoutingKey = domainEvent.ToAggRootKey().ToString();
-                this.producer.Publish(new Message<IDomainEvent>(domainEvent));
+                msg.Topic = domainEvent.ToAggRootKey().ToString();
+                this.producer.Publish(msg);
             }
             catch (Exception ex)
             {
@@ -124,7 +129,9 @@ namespace Basf.Domain
         {
             try
             {
-                await this.producer.PublishAsync(new Message<IDomainEvent>(domainEvent));
+                var msg = new Message<IDomainEvent>(domainEvent);
+                msg.Topic = domainEvent.ToAggRootKey().ToString();
+                await this.producer.PublishAsync(msg);
             }
             catch (Exception ex)
             {
@@ -145,8 +152,9 @@ namespace Basf.Domain
             }
             catch (Exception ex)
             {
-                return ActionResponse.Fail((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
+                //return ActionResponse.Fail((int)ActionResultCode.UnknownException, ex.Message, ex.ToString());
             }
+            return ActionResponse.Success;
         }
         public void AddHandler(Type aggRootType, Type eventType)
         {
@@ -160,10 +168,6 @@ namespace Basf.Domain
             if (!this.aggRoots.ContainsKey(aggRootKey))
             {
                 Type aggRootType = Type.GetType(domainEvent.AggRootType);
-                //从仓储中获取聚合根
-                //Type repositoryType = typeof(IRepository<>).MakeGenericType(aggRootType);
-                //var repository = AppRuntime.Resolve(repositoryType);
-                //IAggRoot aggRoot = await this.aggRootGetHandler.Invoke(repository);
                 //从快照中获取聚合根
                 IAggRoot aggRoot = await AppRuntime.Resolve<ISnapshotStore>().GetAsync(aggRootType.Name, domainEvent.AggRootId);
                 List<IDomainEvent> domainEvents = await AppRuntime.Resolve<IEventStore>().FindAsync(aggRootType.Name, domainEvent.AggRootId, aggRoot.Version + 1);
@@ -174,5 +178,4 @@ namespace Basf.Domain
             return ActionResponse.Success;
         }
     }
-
 }

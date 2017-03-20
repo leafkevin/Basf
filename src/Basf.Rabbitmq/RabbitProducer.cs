@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Basf.Message;
+using Basf.Messages;
 
 namespace Basf.Rabbitmq
 {

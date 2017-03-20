@@ -2,47 +2,42 @@
 {
     public class ActionResponse
     {
-        private static readonly ActionResponse successResponse = new ActionResponse(ActionResult.Success);
-        public ActionResult Result { get; protected set; }
-        /// <summary>
-        /// 使用各种自定义的枚举来定义各自的错误代码
-        /// </summary>
-        public int Code { get; protected set; }
-        public string Message { get; protected set; }
-        public string Detail { get; protected set; }
+        private static readonly ActionResponse successResponse = new ActionResponse(true);
+        public bool Result { get; set; }
+        public int Code { get; set; }
+        public string Message { get; set; }
         public static ActionResponse Success { get { return successResponse; } }
-        protected ActionResponse(ActionResult result, int code = 0, string message = null, string detail = null)
+        protected ActionResponse(bool result, int code = 0, string message = null)
         {
             this.Result = result;
             this.Code = code;
             this.Message = message;
-            this.Detail = detail;
         }
         public static ActionResponse<T> Succeed<T>(T result = default(T))
         {
-            return new ActionResponse<T>(ActionResult.Success, result);
+            return new ActionResponse<T>(true, result);
         }
-        public static ActionResponse Fail(int code, string message, string detail = null)
+        public static ActionResponse Fail(int code, string message)
         {
-            return new ActionResponse(ActionResult.Failed, code, message, detail);
+            return new ActionResponse(false, code, message);
         }
-        public static ActionResponse<T> Fail<T>(int code, string message, string detail = null)
+        public static ActionResponse<T> Fail<T>(int code, string message)
         {
-            return new ActionResponse<T>(ActionResult.Failed, code, message, detail, default(T));
+            return new ActionResponse<T>(false, code, message, default(T));
         }
     }
     public class ActionResponse<T> : ActionResponse
     {
-        public T ReturnData { get; private set; }
-        internal protected ActionResponse(ActionResult result, T returnData)
+        public T Data { get; private set; }
+        internal protected ActionResponse(bool result, T data)
            : base(result)
         {
-            this.ReturnData = returnData;
+            this.Data = data;
         }
-        internal protected ActionResponse(ActionResult result, int code, string message, string detail, T returnData)
-            : base(result, code, message, detail)
+        internal protected ActionResponse(bool result, int code, string message, T data)
+            : base(result, code, message)
         {
-            this.ReturnData = returnData;
+            this.Data = data;
         }
     }
 }

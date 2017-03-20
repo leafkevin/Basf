@@ -1,9 +1,9 @@
-﻿using Basf.Message;
+﻿using Basf.Messages;
 using System;
 
 namespace Basf.Rabbitmq
 {
-    public class RabbitConsumer : IConsumer
+    public class RabbitConsumer //: IConsumer
     {
         public int TotalCount
         {
@@ -17,7 +17,7 @@ namespace Basf.Rabbitmq
         {
             throw new NotImplementedException();
         }
-        public void Subscribe(string routingKey, int nTotalCount = 1)
+        public void Subscribe(string routingKey)
         {
             throw new NotImplementedException();
         }
