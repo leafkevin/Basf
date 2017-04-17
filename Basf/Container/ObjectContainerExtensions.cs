@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Basf
 {
     public static class ObjectContainerExtensions
     {
+        #region Register
         public static void RegisterType(this IObjectContainer objContainer, Type objServiceType, Type objComponentType)
         {
             objContainer.Register(f => f.RegisterType(objServiceType, objComponentType));
@@ -84,9 +86,25 @@ namespace Basf
         {
             objContainer.Register(f => f.RegisterGeneric(objService, objComponent).Lifetime(iLifetimeStyle));
         }
+        #endregion
+
+        #region Resolve      
+        public static TService Resolve<TService>(this IObjectContainer objContainer, params object[] objArgs) where TService : class
+        {
+            return (TService)objContainer.Resolve(typeof(TService), objArgs);
+        }
+        public static TService Resolve<TService>(this IObjectContainer objContainer, IDictionary<string, object> objArgs) where TService : class
+        {
+            return (TService)objContainer.Resolve(typeof(TService), objArgs);
+        }
+        public static bool HasRegister<TService>(this IObjectContainer objContainer)
+        {
+            return objContainer.HasRegister(typeof(TService));
+        }
         public static bool HasRegister<TService>(this IObjectContainer objContainer, string strName)
         {
             return objContainer.HasRegister(typeof(TService), strName);
         }
+        #endregion
     }
 }
