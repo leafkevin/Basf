@@ -12,7 +12,7 @@ namespace Basf.Mq
     public interface IMessageHandler<TMsgBody>
     {
         string RoutingKey { get; }
-        Task Execute(Message msg);
+        Task Execute(Message<TMsgBody> msg);
         string AddProcesser(string msgType, Func<TMsgBody, Task> msgProcesser);
     }
 }

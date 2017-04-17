@@ -10,8 +10,8 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <Version>1.0.0.0</Version>
-    <PackageReleaseNotes>一个DDD+CQRS+Event Sourcing通用框架的接口，可以很容易的结合各种现有成熟框架来搭建。CQRS可以结合Orleans，Akka.net等Actor框架封装实现。目前支持.NET 4.61+,.NET Standard1.6+</PackageReleaseNotes>
-    <Description>一个DDD+CQRS+Event Sourcing通用框架的接口，可以很容易的结合各种现有成熟框架来搭建。CQRS可以结合Orleans，Akka.net等Actor框架封装实现。目前支持.NET 4.61+,.NET Standard1.6+</Description>
+    <PackageReleaseNotes>一个DDD+CQRS+Event Sourcing通用框架的接口，可以很容易的结合各种现有成熟框架来搭建。CQRS可以结合Orleans，Akka.net等Actor框架封装实现。目前支持.NET 4.61+,.NET Standard1.6+。</PackageReleaseNotes>
+    <Description>一个DDD+CQRS+Event Sourcing通用框架的接口，可以很容易的结合各种现有成熟框架来搭建。CQRS可以结合Orleans，Akka.net等Actor框架封装实现。目前支持.NET 4.61+,.NET Standard1.6+。</Description>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="System" />
