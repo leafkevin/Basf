@@ -11,7 +11,7 @@ namespace Basf.Domain
         int Version { get; set; }
         DateTime Timestamp { get; }
     }
-    public interface DomainEvent : IDomainEvent<string>
+    public interface IDomainEvent : IDomainEvent<string>
     {
     }
 }

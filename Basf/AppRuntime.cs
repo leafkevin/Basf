@@ -21,8 +21,10 @@ namespace Basf
         }
         #endregion
 
+        #region 属性
         public static IObjectContainer Container => AppRuntime.Instance.objContainer;
         public static ILogger Logger = (ILogger)AppRuntime.Container?.Resolve(typeof(ILogger));
+        #endregion
 
         #region 配置方法
         public static void Configure(Action<AppRuntime> objBuilder)
